@@ -75,6 +75,7 @@ $Output = [System.IO.Path]::GetFullPath($Output)
 $modules = @(
     'JsonLite.bas'
     'UnicodeUI.bas'
+    'PhraseColors.bas'
     'SnippetStore.bas'
     'QuickPhraseRibbon.bas'
     'QuickPhraseMain.bas'
@@ -119,11 +120,18 @@ $controls = @(
 
     # Sized for a sentence or a short sign-off, which is what phrases actually
     # are. Longer text still scrolls.
-    @{ Type='Forms.TextBox.1';  Name='txtText';     Left=264; Top=68;  Width=380; Height=130
+    @{ Type='Forms.TextBox.1';  Name='txtText';     Left=264; Top=68;  Width=380; Height=110
        Props=@{ MultiLine=$true; WordWrap=$true; ScrollBars=2; EnterKeyBehavior=$true } }
 
-    @{ Type='Forms.CheckBox.1'; Name='chkNewline';  Left=264; Top=206; Width=380; Height=18
+    @{ Type='Forms.CheckBox.1'; Name='chkNewline';  Left=264; Top=184; Width=380; Height=18
        Props=@{ Caption='Start a new line after inserting this phrase' } }
+
+    # Per-phrase, unlike the two settings below it.
+    @{ Type='Forms.Label.1';    Name='lblColor';    Left=264; Top=208; Width=104; Height=14
+       Props=@{ Caption='Colour tag:' } }
+
+    @{ Type='Forms.ComboBox.1'; Name='cboColor';    Left=370; Top=205; Width=180; Height=20
+       Props=@{ Style=2 } }
 
     @{ Type='Forms.Label.1';    Name='lblSpacing';  Left=264; Top=234; Width=104; Height=14
        Props=@{ Caption='Add a space:' } }

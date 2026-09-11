@@ -22,6 +22,10 @@ All notable changes to QuickPhrase are recorded here. Format follows
   before, and is suppressed where whitespace or a paragraph mark already sits.
 - Per-phrase "start a new line after inserting" flag, stored as `newline` in
   `snippets.json`.
+- Per-phrase colour tags, drawn as a swatch beside the phrase on the ribbon.
+  Eleven presets plus the standard Windows colour picker; stored as `color` in
+  `snippets.json`. The ribbon cannot colour button text, so the swatch is an
+  icon rather than a background.
 - Ribbon placement setting: the phrase buttons can live on their own tab, inside
   Word's built-in Home tab, or both. Applies immediately, no restart.
 - Import and export, with a choice of replacing or appending on import.
