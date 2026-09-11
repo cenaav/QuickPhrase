@@ -1,0 +1,27 @@
+# Build output
+dist/*.dotm
+dist/*.zip
+build/tmp/
+
+# Office lock / temp files
+~$*
+*.tmp
+*.wbk
+*.asd
+
+# VBA export leftovers
+*.frx
+*.exp
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Local user data (never commit personal phrases)
+snippets.local.json

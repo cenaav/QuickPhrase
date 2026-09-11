@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="OnRibbonLoad">
+  <ribbon>
+    <tabs>
+      <tab id="qpTab" label="QuickPhrase" insertAfterMso="TabHome">
+
+        <group id="qpGroupFav" label="Favorites">
+        <button id="qpBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        <button id="qpBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+        </group>
+
+        <group id="qpGroupAll" label="All Phrases">
+          <dynamicMenu id="qpMenuAll"
+                       label="All Phrases"
+                       screentip="Every saved phrase"
+                       supertip="Opens the full list. Click an entry to insert it at the cursor."
+                       imageMso="ListMacros"
+                       size="large"
+                       getContent="GetMenuContent" />
+        </group>
+
+        <group id="qpGroupTools" label="Manage">
+          <button id="qpManage" label="Manage Phrases..." onAction="OnManage"
+                  imageMso="ControlProperties" size="large"
+                  screentip="Add, edit, reorder or delete phrases" />
+          <button id="qpImport" label="Import..." onAction="OnImport"
+                  imageMso="FileOpen" size="normal"
+                  screentip="Load phrases from a JSON file" />
+          <button id="qpExport" label="Export..." onAction="OnExport"
+                  imageMso="FileSave" size="normal"
+                  screentip="Save phrases to a JSON file" />
+          <button id="qpReload" label="Reload" onAction="OnReload"
+                  imageMso="Refresh" size="normal"
+                  screentip="Re-read the phrase file from disk" />
+          <button id="qpAbout" label="About" onAction="OnAbout"
+                  imageMso="Help" size="normal" />
+        </group>
+
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

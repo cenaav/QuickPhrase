@@ -1,0 +1,22 @@
+[
+  {
+    "label": "Best regards",
+    "text": "Best regards,\nYour Name"
+  },
+  {
+    "label": "Kind regards",
+    "text": "Kind regards,\nYour Name"
+  },
+  {
+    "label": "Please find",
+    "text": "Please find the attached document for your review."
+  },
+  {
+    "label": "Follow up",
+    "text": "Following up on my previous message."
+  },
+  {
+    "label": "Thanks",
+    "text": "Thank you for your time."
+  }
+]

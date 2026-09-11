@@ -1,0 +1,17 @@
+* text=auto eol=lf
+
+# Windows script hosts want CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# VBA sources are edited in the VBE, which is CRLF-only.
+*.bas  text eol=crlf
+*.cls  text eol=crlf
+*.frm  text eol=crlf
+*.vb   text eol=crlf
+
+# Never touch template binaries.
+*.dotm binary
+*.dot  binary
+*.docm binary
