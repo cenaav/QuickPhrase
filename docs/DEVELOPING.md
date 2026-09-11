@@ -1,21 +1,40 @@
 # Developing QuickPhrase
 
-## Why there is no .dotm in the repo
+## How the build is split, and why
 
-A `.dotm` is an OOXML zip containing `vbaProject.bin` — a compiled, undocumented
-binary that only Word can write. So:
+A `.dotm` is an OOXML zip. Every part inside it is text — except
+`word/vbaProject.bin`, a compiled VBA project that only Microsoft Word can
+produce. That one binary shapes the whole pipeline.
 
-- Source lives in `src/` as plain text and is diffable.
-- The `.dotm` is a build artifact, gitignored, attached to Releases.
-- CI cannot build it. GitHub's Windows runners have no Word. Releases are cut
-  by hand on a machine that does.
+So the repository stores the template **exploded**:
+
+- `package/` — every text part of the `.dotm`, diffable in a pull request.
+- `package/word/vbaProject.bin` — the compiled VBA project. Committed on
+  purpose, despite being a binary.
+- `src/` — the VBA source that blob is compiled *from*, plus the ribbon XML.
+
+Two commands assemble it:
+
+| Command | Needs | Produces |
+|---|---|---|
+| `build/pack.py pack` | Python 3, any OS | `dist/QuickPhrase.dotm` |
+| `build/build.ps1 -ExportVba` | Windows + Word | `package/word/vbaProject.bin` |
+
+The first runs on every push and on release. The second runs only when the VBA
+source changes — and a human runs it, because no CI runner has Word.
+
+**Committing a compiled binary is a deliberate trade.** It is the only way
+GitHub Actions can publish releases; the alternative is a self-hosted Windows
+runner with Word installed, which is worth revisiting if the VBA starts changing
+often. The mitigation is that `src/` holds the readable source, so the blob is
+reproducible and reviewable by rebuilding rather than by reading.
 
 ## Layout
 
 ```
 src/
   customUI/
-    customUI14.xml         Ribbon definition for Word 2010+
+    customUI14.xml         Ribbon definition, Word 2010+ namespace
     customUI.xml           Same tab, Word 2007 namespace
   modules/
     JsonLite.bas           Minimal JSON reader/writer
@@ -25,93 +44,135 @@ src/
   forms/
     frmManager.code.vb     Manager dialog behaviour (controls are generated)
 
-build/build.ps1            Source -> dist/QuickPhrase.dotm
+package/                   The .dotm, exploded
+  [Content_Types].xml
+  _rels/.rels              Includes both customUI relationships
+  word/
+    document.xml           Intentionally empty body
+    styles.xml             Minimal; must not restyle user documents
+    settings.xml
+    _rels/document.xml.rels
+    vbaProject.bin         Compiled VBA (binary, committed)
+  docProps/
+
+build/
+  pack.py                  package/ + src/customUI -> .dotm  (any OS)
+  build.ps1                VBA source -> vbaProject.bin      (Windows + Word)
+  check_sources.py         Static cross-file consistency checks
+
 install/                   End-user install and uninstall
 examples/                  Importable phrase packs
+.github/workflows/         ci.yml (checks + pack), release.yml (publish)
 ```
 
-### Why the form has no .frm/.frx
+Note `src/customUI/` is the single source of truth for the ribbon XML: `pack.py`
+maps those files into the archive at `customUI/`, and `package/` deliberately
+does not contain a copy. `pack.py explode` skips them for the same reason.
 
-VBA exports a UserForm as a text `.frm` plus a binary `.frx`, and the `.frm`
-references the `.frx` by offset — so importing the text half alone fails. Rather
-than commit a binary blob that no diff can review, `build.ps1` creates the form
-at build time: it adds the controls from the `$controls` table, then pastes
-`frmManager.code.vb` into the form's code module.
+## Everyday workflow
 
-Consequence: **control names appear in two places.** Rename a control in
-`$controls` and you must rename it in `frmManager.code.vb` too. A mismatch is
-not caught at build time — the form compiles and the handler simply never
-fires.
+Changing ribbon XML, docs, examples or workflows — **no Word needed**:
 
-## Building
+```bash
+python3 build/check_sources.py
+python3 build/pack.py pack
+python3 build/pack.py verify
+```
 
-Needs Windows and Word. One-time setup:
+Changing VBA under `src/` — needs Windows and Word once:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba
+git add package/word/vbaProject.bin
+```
+
+One-time Word setup for that step:
 
 *Word → File → Options → Trust Center → Trust Center Settings → Macro Settings*
 → tick **Trust access to the VBA project object model**.
 
-The build automates the VBA editor, which is exactly what that setting gates.
-It is safe to untick afterwards; the add-in itself never needs it.
+The build automates the VBA editor, which is precisely what that setting gates.
+Safe to untick afterwards; the add-in itself never needs it.
+
+## If Word rejects the packed template
+
+`package/` was hand-authored, and a newer Word may expect parts it does not
+contain. Rather than guess, regenerate the parts from a template Word wrote
+itself:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build\build.ps1
-
-# watch Word work, useful when a stage fails
-powershell -ExecutionPolicy Bypass -File build\build.ps1 -ShowWord
+powershell -ExecutionPolicy Bypass -File build\build.ps1   # full Word build
+python build\pack.py explode dist\QuickPhrase.dotm         # refresh package/
 ```
 
-Two stages:
+Then review the diff before committing — Word may have added parts, and some of
+them (`docProps/app.xml` timestamps, for example) are noise.
 
-1. **Word automation.** New template → import `.bas` modules → generate
-   `frmManager` → save as `wdFormatXMLTemplateMacroEnabled` (15).
-2. **Zip surgery.** Insert both customUI parts and rewrite `_rels/.rels` to
-   reference them, preserving Word's own relationships. No Word needed.
+## Why the form has no .frm/.frx
 
-## How the ribbon manages a dynamic list
+VBA exports a UserForm as a text `.frm` plus a binary `.frx`, and the `.frm`
+references the `.frx` by byte offset — so importing the text half alone fails.
+Rather than commit a second binary blob that no diff can review, `build.ps1`
+creates the form at build time: it adds the controls listed in its `$controls`
+table, then pastes `frmManager.code.vb` into the form's code module.
 
-Ribbon XML is read once at load and cannot be regenerated, which is awkward for
-a user-editable list. QuickPhrase works around it two ways at once:
+Consequence: **control names live in two files.** Rename a control in
+`$controls` and you must rename it in `frmManager.code.vb` too. A mismatch is
+not a build error — the form compiles and the handler simply never fires, which
+is why `check_sources.py` verifies the two agree.
 
-- **Favorites** ships a fixed pool of 12 buttons (`qpBtn01`…`qpBtn12`). Each
-  asks `GetFavLabel` / `GetFavVisible` what to show, so `Invalidate` is enough
-  to relabel and hide them. Real flat buttons, capped count.
+## How the ribbon manages a user-editable list
+
+Ribbon XML is read once when Word loads the template and cannot be regenerated.
+That is awkward for a list the user edits at run time. QuickPhrase solves it two
+ways at once:
+
+- **Favorites** declares a fixed pool of 12 buttons (`qpBtn01`…`qpBtn12`). Each
+  asks `GetFavLabel` / `GetFavVisible` what to display, so a single
+  `IRibbonUI.Invalidate` relabels and hides them. Real flat buttons; capped
+  count.
 - **All Phrases** is a `dynamicMenu`. `GetMenuContent` returns menu XML built at
   click time, so it has no limit — at the cost of one extra click.
 
-To change the favorites count, edit `FAV_COUNT` in `QuickPhraseRibbon.bas`
-**and** the button count in both customUI files. They must agree.
+To change the favourites count, edit `FAV_COUNT` in `QuickPhraseRibbon.bas`
+**and** the button list in both customUI files. `check_sources.py` fails if they
+disagree.
 
-`GetMenuContent` picks its XML namespace from `Application.Version`: 2007 wants
-the 2006 namespace, 2010+ wants the 2009 one. A mismatch yields an empty menu
-with no error — worth remembering if the menu ever comes up blank.
+`GetMenuContent` picks its namespace from `Application.Version`: Word 2007 wants
+the 2006 namespace, 2010+ the 2009 one. A mismatch produces an empty menu with
+no error — worth remembering if the menu ever comes up blank.
 
 ## Editing VBA in the VBE instead
 
-Faster for debugging than rebuilding each time:
+Faster than rebuilding for each experiment:
 
 1. Build and install as usual.
-2. In Word press <kbd>Alt</kbd>+<kbd>F11</kbd>, find the `QuickPhrase` project.
+2. In Word press <kbd>Alt</kbd>+<kbd>F11</kbd> and find the `QuickPhrase` project.
 3. Edit, then **export the changed module back over `src/modules/`** —
-   right-click → Export File. Otherwise the next build overwrites your work.
+   right-click → Export File — and re-run `build.ps1 -ExportVba`. Otherwise the
+   next build overwrites your work.
 
-Ribbon XML cannot be edited this way. Change the XML and rebuild.
+Ribbon XML cannot be edited this way. Change the XML and repack.
 
 ## Gotchas worth knowing
 
 **The `IRibbonUI` reference is fragile.** An unhandled VBA error resets the
 project and drops it, after which `Invalidate` silently does nothing until Word
-rebuilds the ribbon. `RefreshRibbon` swallows this on purpose; the **Reload**
+rebuilds the ribbon. `RefreshRibbon` swallows that on purpose; the **Reload**
 button is the user-facing escape hatch.
 
-**UTF-8 without a BOM needs the two-stream dance.** `ADODB.Stream` always
-writes a BOM in text mode, so `SnippetStore.WriteUtf8` stages the text, flips
-the stream to binary, seeks past the three BOM bytes and copies into a second
-stream. Skipping this leaves a BOM that shows up as `ï»¿` in other editors.
-Also note `Type` may only be changed while `Position` is 0.
+**UTF-8 without a BOM needs the two-stream dance.** `ADODB.Stream` always writes
+a BOM in text mode, so `SnippetStore.WriteUtf8` stages the text, flips the stream
+to binary, seeks past the three BOM bytes and copies into a second stream.
+Skipping it leaves a BOM that surfaces as `ï»¿` in other editors. Also note
+`Type` may only be changed while `Position` is 0.
 
 **Line breaks change form three times.** `vbLf` in the file, `vbCrLf` in the
 dialog's text box, `vbCr` in a Word range. Each conversion is explicit in the
 code; dropping one produces stray boxes or lost line breaks.
+
+**`[Content_Types].xml` must be the first zip entry.** `pack.py` enforces the
+order, and `verify` checks it. Word rejects the package otherwise.
 
 **Buttons need no image.** Ribbon buttons at `size="normal"` render label-only
 quite happily, which is why there are no icon assets to maintain.
@@ -119,7 +180,14 @@ quite happily, which is why there are no icon assets to maintain.
 ## Releasing
 
 1. Bump `QP_VERSION` in `QuickPhraseMain.bas` and add a `CHANGELOG.md` entry.
-2. `build\build.ps1`
-3. Install the result and smoke-test: insert a phrase, add/edit/delete/reorder
-   one, import and export, restart Word and confirm they persisted.
-4. Tag, then create the release and attach `dist\QuickPhrase.dotm`.
+2. If the VBA changed: `build\build.ps1 -ExportVba` on Windows, and commit the blob.
+3. Smoke-test a real install: insert a phrase, add/edit/delete/reorder one,
+   import and export, restart Word and confirm everything persisted.
+4. Tag and push:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+5. `release.yml` packs the template, bundles it with the installer and publishes
+   the Release. It fails deliberately if `vbaProject.bin` is missing, since a
+   release with no macros is worse than no release.

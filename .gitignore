@@ -3,6 +3,9 @@ dist/*.dotm
 dist/*.zip
 build/tmp/
 
+# package/word/vbaProject.bin is deliberately NOT ignored - it is the one
+# compiled part of the template and CI needs it to build releases.
+
 # Office lock / temp files
 ~$*
 *.tmp

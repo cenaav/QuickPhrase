@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+                   xmlns:dc="http://purl.org/dc/elements/1.1/"
+                   xmlns:dcterms="http://purl.org/dc/terms/"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dc:title>QuickPhrase</dc:title>
+  <dc:subject>Insert frequently used phrases into Word from ribbon buttons</dc:subject>
+  <dc:creator>QuickPhrase contributors</dc:creator>
+  <cp:keywords>word add-in;snippets;text expander;phrases;vba;ribbon</cp:keywords>
+  <dc:description>https://github.com/cenaav/QuickPhrase</dc:description>
+</cp:coreProperties>

@@ -1,0 +1,76 @@
+name: CI
+
+# Validates the sources and proves the template still packs. Runs on Ubuntu:
+# packing needs no Word, which is the whole point of keeping the compiled VBA
+# project committed as package/word/vbaProject.bin.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Source checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate sources
+        run: python3 build/check_sources.py
+
+      - name: Pack template
+        run: |
+          if [ -f package/word/vbaProject.bin ]; then
+            python3 build/pack.py pack
+          else
+            echo "::warning::package/word/vbaProject.bin is not committed yet."
+            echo "::warning::Packing without macros, so structure is checked but the add-in is inert."
+            echo "::warning::Generate it on Windows with: build\\build.ps1 -ExportVba"
+            python3 build/pack.py pack --allow-missing-vba
+          fi
+
+      - name: Verify package structure
+        run: |
+          if [ -f package/word/vbaProject.bin ]; then
+            python3 build/pack.py verify
+          else
+            # Without the blob the macro check cannot pass, but every other
+            # structural check still has to.
+            python3 build/pack.py verify --allow-missing-vba
+          fi
+
+      - name: Upload template artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuickPhrase-dotm-${{ github.sha }}
+          path: dist/QuickPhrase.dotm
+          if-no-files-found: error
+          retention-days: 14
+
+  shellcheck:
+    name: Lint installer scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error,Warning
+          if ($results) {
+            $results | Format-Table -AutoSize
+            # Warnings are informational here; only errors should block.
+            if ($results | Where-Object Severity -eq 'Error') { exit 1 }
+          }
+          Write-Host 'No PowerShell errors.'

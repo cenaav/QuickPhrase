@@ -15,3 +15,7 @@
 *.dotm binary
 *.dot  binary
 *.docm binary
+
+# The compiled VBA project. Committed on purpose so CI can build releases
+# without Word; see docs/DEVELOPING.md.
+*.bin  binary

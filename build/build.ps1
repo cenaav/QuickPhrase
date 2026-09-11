@@ -25,13 +25,22 @@
 .PARAMETER ShowWord
     Keep Word visible while building. Useful when a stage fails.
 
+.PARAMETER ExportVba
+    Also copy the compiled VBA project out to package\word\vbaProject.bin.
+
+    Commit that file, and every later release can be packed by build\pack.py on
+    any OS - including a GitHub Actions Linux runner with no Word. Re-run this
+    whenever the VBA source under src\ changes; ribbon XML and doc edits do
+    not need a new blob.
+
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File build\build.ps1
 #>
 [CmdletBinding()]
 param(
     [string] $Output,
-    [switch] $ShowWord
+    [switch] $ShowWord,
+    [switch] $ExportVba
 )
 
 Set-StrictMode -Version Latest
@@ -285,6 +294,45 @@ function Assert-XmlDefaultContentType {
     }
 }
 
+# --- Optional: export the compiled VBA project --------------------------------
+
+# Lifts word/vbaProject.bin out of the freshly built template so it can be
+# committed. That blob is the only part of the package Word alone can produce;
+# with it in the repo, build\pack.py assembles releases anywhere.
+function Export-VbaBlob {
+    param([string] $Package)
+
+    $blobPath = Join-Path $repoRoot 'package\word\vbaProject.bin'
+    $blobDir = Split-Path -Parent $blobPath
+    if (-not (Test-Path -LiteralPath $blobDir)) {
+        New-Item -ItemType Directory -Path $blobDir -Force | Out-Null
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($Package)
+    try {
+        $entry = $zip.GetEntry('word/vbaProject.bin')
+        if (-not $entry) {
+            throw 'word/vbaProject.bin is not in the built template; the VBA project did not compile.'
+        }
+
+        $source = $entry.Open()
+        try {
+            $target = [System.IO.File]::Create($blobPath)
+            try { $source.CopyTo($target) } finally { $target.Dispose() }
+        }
+        finally { $source.Dispose() }
+    }
+    finally { $zip.Dispose() }
+
+    $sizeKb = (Get-Item -LiteralPath $blobPath).Length / 1KB
+    Write-Host ''
+    Write-Host ("Exported VBA project: package\word\vbaProject.bin ({0:N1} KiB)" -f $sizeKb) -ForegroundColor Green
+    Write-Host 'Commit it so CI can build releases without Word:' -ForegroundColor Gray
+    Write-Host '  git add package/word/vbaProject.bin' -ForegroundColor Gray
+}
+
 # --- Main ---------------------------------------------------------------------
 
 # Evaluate the version first: $IsWindows does not exist on PowerShell 5,
@@ -301,6 +349,8 @@ if (Test-Path -LiteralPath $Output) { Remove-Item -LiteralPath $Output -Force }
 
 Build-Template -Destination $Output
 Add-CustomUi   -Package    $Output
+
+if ($ExportVba) { Export-VbaBlob -Package $Output }
 
 Write-Host ''
 Write-Host "Built: $Output" -ForegroundColor Green

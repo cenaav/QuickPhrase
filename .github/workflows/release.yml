@@ -1,0 +1,115 @@
+name: Release
+
+# Packs QuickPhrase.dotm and attaches it to a GitHub Release, so anyone can
+# download a ready-to-install file without building anything.
+#
+# Runs on Ubuntu. That works because the one part only Word can produce -
+# package/word/vbaProject.bin - is committed to the repo. Everything else is
+# text, and build/pack.py zips it with the standard library alone.
+#
+# Trigger by pushing a tag:
+#
+#     git tag v1.0.0 && git push origin v1.0.0
+#
+# Or run it by hand from the Actions tab.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # A release with an inert template would be worse than no release, so
+      # this is a hard failure rather than a warning.
+      - name: Require the compiled VBA project
+        run: |
+          if [ ! -f package/word/vbaProject.bin ]; then
+            echo "::error::package/word/vbaProject.bin is missing."
+            echo "::error::A release built without it would have no macros and no ribbon tab."
+            echo "::error::Generate it on Windows with: powershell -File build\\build.ps1 -ExportVba"
+            exit 1
+          fi
+
+      - name: Validate sources
+        run: python3 build/check_sources.py
+
+      - name: Pack template
+        run: python3 build/pack.py pack
+
+      - name: Verify package
+        run: python3 build/pack.py verify
+
+      # Shipping the installer next to the template means users do not have to
+      # clone the repo to install.
+      - name: Assemble installer bundle
+        run: |
+          VERSION="${{ github.event.inputs.tag || github.ref_name }}"
+          BUNDLE="QuickPhrase-${VERSION}"
+          mkdir -p "$BUNDLE"
+          cp dist/QuickPhrase.dotm "$BUNDLE/"
+          cp install/Install.bat install/Install.ps1 "$BUNDLE/"
+          cp install/Uninstall.bat install/Uninstall.ps1 "$BUNDLE/"
+          cp LICENSE "$BUNDLE/"
+          cp docs/INSTALL.md "$BUNDLE/INSTALL.md"
+          mkdir -p "$BUNDLE/examples"
+          cp examples/*.json "$BUNDLE/examples/"
+          zip -r "${BUNDLE}.zip" "$BUNDLE"
+          ls -la "${BUNDLE}.zip"
+          echo "BUNDLE=${BUNDLE}" >> "$GITHUB_ENV"
+
+      - name: Verify the VBA project survived packing
+        run: |
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile("dist/QuickPhrase.dotm") as zf:
+              size = zf.getinfo("word/vbaProject.bin").file_size
+          print(f"vbaProject.bin: {size} bytes")
+          assert size > 1024, "vbaProject.bin looks truncated"
+          PY
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: QuickPhrase ${{ github.event.inputs.tag || github.ref_name }}
+          draft: false
+          generate_release_notes: true
+          files: |
+            dist/QuickPhrase.dotm
+            ${{ env.BUNDLE }}.zip
+          body: |
+            ## Install
+
+            1. Download **`${{ env.BUNDLE }}.zip`** below and unzip it.
+            2. Close Word.
+            3. Double-click **`Install.bat`**.
+            4. Start Word - a **QuickPhrase** tab appears next to Home.
+
+            No admin rights required.
+
+            Prefer to do it yourself? Download `QuickPhrase.dotm`, right-click it
+            → Properties → tick **Unblock**, then copy it into
+            `%APPDATA%\Microsoft\Word\STARTUP\`.
+
+            Full instructions and troubleshooting: [INSTALL.md](https://github.com/cenaav/QuickPhrase/blob/main/docs/INSTALL.md)
+
+            ### نصب
+
+            فایل zip را دانلود و باز کنید، Word را ببندید، روی `Install.bat` دوبار کلیک کنید، سپس Word را باز کنید.
