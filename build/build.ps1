@@ -25,6 +25,22 @@
 .PARAMETER ShowWord
     Keep Word visible while building. Useful when a stage fails.
 
+.PARAMETER EnableVbomTrust
+    Set the AccessVBOM registry value that permits VBA project automation,
+    instead of ticking it by hand in Word's Trust Center.
+
+    This is the one setting the build needs. It applies to the current user
+    only, needs no admin rights, and is reversible:
+
+        reg add "HKCU\Software\Microsoft\Office\16.0\Word\Security" /v AccessVBOM /t REG_DWORD /d 0 /f
+
+    Only code that edits macros is affected. The QuickPhrase add-in never needs
+    it, so turning it back off after a successful build costs nothing.
+
+.PARAMETER DisableVbomTrust
+    Set AccessVBOM back to 0 and exit without building. Use it to restore the
+    Trust Center setting once a build has succeeded.
+
 .PARAMETER ExportVba
     Also copy the compiled VBA project out to package\word\vbaProject.bin.
 
@@ -40,7 +56,9 @@
 param(
     [string] $Output,
     [switch] $ShowWord,
-    [switch] $ExportVba
+    [switch] $ExportVba,
+    [switch] $EnableVbomTrust,
+    [switch] $DisableVbomTrust
 )
 
 Set-StrictMode -Version Latest
@@ -302,49 +320,105 @@ function Assert-XmlDefaultContentType {
 # --- Trust Center guidance ----------------------------------------------------
 
 # Building the VBA project means automating the VBA editor, which Word gates
-# behind one Trust Center setting. Without it $doc.VBProject silently yields
-# nothing, so this message is the whole difference between a five-second fix and
-# a confusing hunt.
+# behind a single Trust Center setting. Without it $doc.VBProject silently
+# yields nothing, so these helpers are the difference between a five-second fix
+# and a confusing hunt.
+
+# Registry paths of every installed Word version, newest first.
+function Get-WordSecurityKey {
+    $keys = @()
+    try {
+        $keys = Get-ChildItem 'HKCU:\Software\Microsoft\Office' -ErrorAction SilentlyContinue |
+                Where-Object { $_.PSChildName -match '^\d+\.\d+$' } |
+                Sort-Object { [double] $_.PSChildName } -Descending
+    } catch {
+        return @()
+    }
+
+    $result = @()
+    foreach ($key in $keys) {
+        $result += [PSCustomObject]@{
+            Version = $key.PSChildName
+            Path    = "HKCU:\Software\Microsoft\Office\$($key.PSChildName)\Word\Security"
+        }
+    }
+    return $result
+}
+
+# Reads AccessVBOM, or $null when the value has never been written. Under
+# Set-StrictMode a missing property throws, hence the explicit check.
+function Get-VbomValue {
+    param([string] $SecurityPath)
+
+    $props = Get-ItemProperty -Path $SecurityPath -ErrorAction SilentlyContinue
+    if (-not $props) { return $null }
+    if ($props.PSObject.Properties.Name -notcontains 'AccessVBOM') { return $null }
+    return $props.AccessVBOM
+}
+
+function Enable-VbomTrust {
+    $keys = Get-WordSecurityKey
+    if ($keys.Count -eq 0) {
+        throw 'No Word installation found under HKCU:\Software\Microsoft\Office.'
+    }
+
+    Write-Host 'Enabling VBA project access (current user only)...' -ForegroundColor Cyan
+
+    foreach ($key in $keys) {
+        if (-not (Test-Path -LiteralPath $key.Path)) {
+            New-Item -Path $key.Path -Force | Out-Null
+        }
+        Set-ItemProperty -Path $key.Path -Name AccessVBOM -Value 1 -Type DWord
+        Write-Host "           Office $($key.Version): AccessVBOM = 1"
+    }
+
+    Write-Host '           Turn it back off after the build with -DisableVbomTrust' -ForegroundColor Gray
+}
+
+function Disable-VbomTrust {
+    foreach ($key in Get-WordSecurityKey) {
+        if (Test-Path -LiteralPath $key.Path) {
+            Set-ItemProperty -Path $key.Path -Name AccessVBOM -Value 0 -Type DWord
+            Write-Host "Office $($key.Version): AccessVBOM = 0" -ForegroundColor Gray
+        }
+    }
+}
+
 function Get-VbomHelpText {
     $text = @'
 Word blocked access to the VBA project object model.
 
-This is the one setting the build needs. Turn it on:
+This is the one setting the build needs. Either re-run with:
 
-  Word > File > Options > Trust Center > Trust Center Settings
-       > Macro Settings > tick "Trust access to the VBA project object model"
+    build\build.ps1 -ExportVba -EnableVbomTrust
 
-Then close Word and run this script again.
+or tick it by hand:
 
-The setting only affects code that edits macros - the QuickPhrase add-in itself
-never needs it, so you can untick it once the build succeeds.
+    Word > File > Options > Trust Center > Trust Center Settings
+         > Macro Settings > "Trust access to the VBA project object model"
 
-Already ticked and still failing? Check that:
-  - you ticked it in Word, not Excel (the setting is per application)
-  - no Word window is still open (close every one, check Task Manager for WINWORD.EXE)
-  - you are not running this in an elevated prompt while Word runs unelevated
+then close Word and run this script again.
+
+Only code that edits macros is affected. The QuickPhrase add-in never needs it,
+so you can turn it back off once the build succeeds.
 
 '@
 
-    # Reporting the current registry value turns "I already ticked it" into a
-    # fact. Wrapped defensively: this runs inside an error path, and a failure
-    # here would hide the message above.
-    try {
-        $keys = Get-ChildItem 'HKCU:\Software\Microsoft\Office' -ErrorAction SilentlyContinue |
-                Where-Object { $_.PSChildName -match '^\d+\.\d+$' }
-
-        foreach ($key in $keys) {
-            $securityPath = "HKCU:\Software\Microsoft\Office\$($key.PSChildName)\Word\Security"
-            $props = Get-ItemProperty -Path $securityPath -ErrorAction SilentlyContinue
-            if (-not $props) { continue }
-            if ($props.PSObject.Properties.Name -notcontains 'AccessVBOM') { continue }
-
-            $value = $props.AccessVBOM
-            $state = if ($value -eq 1) { 'enabled' } else { 'DISABLED' }
-            $text += "Office $($key.PSChildName): AccessVBOM = $value ($state)`n"
+    $found = $false
+    foreach ($key in Get-WordSecurityKey) {
+        $value = Get-VbomValue -SecurityPath $key.Path
+        $found = $true
+        if ($null -eq $value) {
+            $text += "Office $($key.Version): AccessVBOM is not set (this is why it failed)`n"
+        } elseif ($value -eq 1) {
+            $text += "Office $($key.Version): AccessVBOM = 1 (enabled - is a Word window still open?)`n"
+        } else {
+            $text += "Office $($key.Version): AccessVBOM = $value (disabled)`n"
         }
-    } catch {
-        # Nothing to add; the instructions above stand on their own.
+    }
+
+    if (-not $found) {
+        $text += "No Word installation found under HKCU:\Software\Microsoft\Office.`n"
     }
 
     return $text
@@ -397,18 +471,64 @@ if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
     throw 'This build script needs Windows with Microsoft Word installed.'
 }
 
+if ($DisableVbomTrust) {
+    Disable-VbomTrust
+    exit 0
+}
+
+if ($EnableVbomTrust) { Enable-VbomTrust }
+
+# Fail before starting Word rather than after. Launching Word takes seconds and
+# the failure would be identical, just slower and with a stray process to clean
+# up.
+$trusted = $false
+foreach ($key in Get-WordSecurityKey) {
+    if ((Get-VbomValue -SecurityPath $key.Path) -eq 1) { $trusted = $true }
+}
+if (-not $trusted) {
+    Write-Host ''
+    Write-Host (Get-VbomHelpText) -ForegroundColor Yellow
+    exit 1
+}
+
+if (Get-Process -Name WINWORD -ErrorAction SilentlyContinue) {
+    Write-Host ''
+    Write-Host 'Word is already running.' -ForegroundColor Yellow
+    Write-Host 'Close every Word window and try again - an open instance can hold' -ForegroundColor Gray
+    Write-Host 'the old Trust Center settings and lock the output file.' -ForegroundColor Gray
+    exit 1
+}
+
 $outDir = Split-Path -Parent $Output
 if (-not (Test-Path -LiteralPath $outDir)) {
     New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 }
 if (Test-Path -LiteralPath $Output) { Remove-Item -LiteralPath $Output -Force }
 
-Build-Template -Destination $Output
-Add-CustomUi   -Package    $Output
+# Errors here are almost always environmental - a Trust Center setting, a
+# running Word, a locked file. A bare throw buries that advice under a
+# PowerShell stack trace, so the message is printed on its own.
+try {
+    Build-Template -Destination $Output
+    Add-CustomUi   -Package    $Output
 
-if ($ExportVba) { Export-VbaBlob -Package $Output }
+    if ($ExportVba) { Export-VbaBlob -Package $Output }
+}
+catch {
+    Write-Host ''
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host "Re-run with -ShowWord to watch the build, or see docs/DEVELOPING.md." -ForegroundColor Gray
+    exit 1
+}
 
 Write-Host ''
 Write-Host "Built: $Output" -ForegroundColor Green
 Write-Host 'Install it with install\Install.bat, or copy it into:' -ForegroundColor Gray
 Write-Host "  $env:APPDATA\Microsoft\Word\STARTUP" -ForegroundColor Gray
+
+if ($EnableVbomTrust) {
+    Write-Host ''
+    Write-Host 'Restore the Trust Center setting with:' -ForegroundColor Gray
+    Write-Host '  build\build.ps1 -DisableVbomTrust' -ForegroundColor Gray
+}

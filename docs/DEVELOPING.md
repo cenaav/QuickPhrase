@@ -86,18 +86,29 @@ powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba
 git add package/word/vbaProject.bin
 ```
 
-One-time Word setup for that step:
+One-time Word setup for that step. Either let the script do it:
 
-*Word → File → Options → Trust Center → Trust Center Settings → Macro Settings*
-→ tick **Trust access to the VBA project object model**.
+```powershell
+powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba -EnableVbomTrust
+
+# once the build has succeeded
+powershell -ExecutionPolicy Bypass -File build\build.ps1 -DisableVbomTrust
+```
+
+or tick it by hand in *Word → File → Options → Trust Center → Trust Center
+Settings → Macro Settings → **Trust access to the VBA project object model***.
 
 The build automates the VBA editor, which is precisely what that setting gates.
-Safe to untick afterwards; the add-in itself never needs it.
+It applies to the current user only and needs no admin rights. Safe to turn back
+off afterwards; the add-in itself never needs it.
 
-Without it, Word does not raise an error - `$doc.VBProject` simply returns
-nothing. `build.ps1` checks for that and prints the fix, including the current
+Without it, Word raises no error - `$doc.VBProject` simply returns nothing, and
+the failure surfaces later as a misleading "property 'Name' cannot be found".
+So `build.ps1` checks
 `HKCU:\Software\Microsoft\Office\<version>\Word\Security\AccessVBOM`
-registry value, so "I already ticked it" can be confirmed rather than assumed.
+*before* launching Word, and reports whether the value is unset, 0, or already 1
+— which distinguishes "never enabled" from "enabled, but a Word window is still
+holding the old setting".
 
 ## If Word rejects the packed template
 
