@@ -94,6 +94,11 @@ One-time Word setup for that step:
 The build automates the VBA editor, which is precisely what that setting gates.
 Safe to untick afterwards; the add-in itself never needs it.
 
+Without it, Word does not raise an error - `$doc.VBProject` simply returns
+nothing. `build.ps1` checks for that and prints the fix, including the current
+`HKCU:\Software\Microsoft\Office\<version>\Word\Security\AccessVBOM`
+registry value, so "I already ticked it" can be confirmed rather than assumed.
+
 ## If Word rejects the packed template
 
 `package/` was hand-authored, and a newer Word may expect parts it does not

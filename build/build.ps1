@@ -132,19 +132,24 @@ function Build-Template {
         # wdFormatXMLTemplateMacroEnabled = 15
         $doc.SaveAs2($Destination, 15)
 
+        # When access is denied, Word does not raise an error here - the property
+        # just comes back empty. Both outcomes have to be handled, or the
+        # failure surfaces later as a baffling "property 'Name' cannot be found".
+        $project = $null
         try {
             $project = $doc.VBProject
         } catch {
-            throw @'
-Word blocked access to the VBA project.
-
-Turn it on once:
-  Word > File > Options > Trust Center > Trust Center Settings
-       > Macro Settings > tick "Trust access to the VBA project object model"
-
-Then run this script again. You can untick it afterwards.
-'@
+            $project = $null
         }
+
+        if ($null -eq $project) { throw (Get-VbomHelpText) }
+
+        try {
+            $components = $project.VBComponents
+        } catch {
+            throw (Get-VbomHelpText)
+        }
+        if ($null -eq $components) { throw (Get-VbomHelpText) }
 
         $project.Name = 'QuickPhrase'
 
@@ -292,6 +297,57 @@ function Assert-XmlDefaultContentType {
     if ($types -notmatch 'Extension="xml"') {
         throw 'No Default content type for "xml" in the package; the ribbon parts would be ignored.'
     }
+}
+
+# --- Trust Center guidance ----------------------------------------------------
+
+# Building the VBA project means automating the VBA editor, which Word gates
+# behind one Trust Center setting. Without it $doc.VBProject silently yields
+# nothing, so this message is the whole difference between a five-second fix and
+# a confusing hunt.
+function Get-VbomHelpText {
+    $text = @'
+Word blocked access to the VBA project object model.
+
+This is the one setting the build needs. Turn it on:
+
+  Word > File > Options > Trust Center > Trust Center Settings
+       > Macro Settings > tick "Trust access to the VBA project object model"
+
+Then close Word and run this script again.
+
+The setting only affects code that edits macros - the QuickPhrase add-in itself
+never needs it, so you can untick it once the build succeeds.
+
+Already ticked and still failing? Check that:
+  - you ticked it in Word, not Excel (the setting is per application)
+  - no Word window is still open (close every one, check Task Manager for WINWORD.EXE)
+  - you are not running this in an elevated prompt while Word runs unelevated
+
+'@
+
+    # Reporting the current registry value turns "I already ticked it" into a
+    # fact. Wrapped defensively: this runs inside an error path, and a failure
+    # here would hide the message above.
+    try {
+        $keys = Get-ChildItem 'HKCU:\Software\Microsoft\Office' -ErrorAction SilentlyContinue |
+                Where-Object { $_.PSChildName -match '^\d+\.\d+$' }
+
+        foreach ($key in $keys) {
+            $securityPath = "HKCU:\Software\Microsoft\Office\$($key.PSChildName)\Word\Security"
+            $props = Get-ItemProperty -Path $securityPath -ErrorAction SilentlyContinue
+            if (-not $props) { continue }
+            if ($props.PSObject.Properties.Name -notcontains 'AccessVBOM') { continue }
+
+            $value = $props.AccessVBOM
+            $state = if ($value -eq 1) { 'enabled' } else { 'DISABLED' }
+            $text += "Office $($key.PSChildName): AccessVBOM = $value ($state)`n"
+        }
+    } catch {
+        # Nothing to add; the instructions above stand on their own.
+    }
+
+    return $text
 }
 
 # --- Optional: export the compiled VBA project --------------------------------
