@@ -7,18 +7,18 @@
       <tab id="qpTab" label="QuickPhrase" insertAfterMso="TabHome" getVisible="GetOwnTabVisible">
 
         <group id="qpGroupFav" label="Favorites">
-          <button id="qpBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
         </group>
 
         <group id="qpGroupAll" label="All Phrases">
@@ -59,18 +59,18 @@
       <tab idMso="TabHome">
         <group id="qpHomeGroup" label="QuickPhrase"
                getVisible="GetHomeGroupVisible" insertAfterMso="GroupEditing">
-          <button id="qpHomeBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
-          <button id="qpHomeBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" getImage="GetFavImage" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
           <dynamicMenu id="qpHomeMenuAll"
                        label="All Phrases"
                        screentip="Every saved phrase"

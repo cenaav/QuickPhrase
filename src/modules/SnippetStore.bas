@@ -37,7 +37,6 @@ Private Const SETTINGS_SECTION As String = "Options"
 Private mLabels() As String
 Private mTexts() As String
 Private mNewlines() As Boolean
-Private mColors() As String
 Private mCount As Long
 Private mLoaded As Boolean
 
@@ -131,13 +130,6 @@ Public Function PhraseText(ByVal index As Long) As String
     PhraseText = mTexts(index)
 End Function
 
-' The phrase's ribbon colour tag as "#RRGGBB", or "" for none.
-Public Function PhraseColor(ByVal index As Long) As String
-    EnsureLoaded
-    If index < 0 Or index >= mCount Then Exit Function
-    PhraseColor = mColors(index)
-End Function
-
 ' True when inserting this phrase should also end the paragraph.
 Public Function PhraseNewline(ByVal index As Long) As Boolean
     EnsureLoaded
@@ -149,27 +141,23 @@ End Function
 ' None of these write to disk; call SaveToDisk when the user commits.
 
 Public Sub AddPhrase(ByVal label As String, ByVal text As String, _
-                     Optional ByVal newline As Boolean = False, _
-                     Optional ByVal color As String = "")
+                     Optional ByVal newline As Boolean = False)
     EnsureLoaded
     Grow mCount + 1
     mLabels(mCount) = label
     mTexts(mCount) = text
     mNewlines(mCount) = newline
-    mColors(mCount) = color
     mCount = mCount + 1
 End Sub
 
 Public Sub UpdatePhrase(ByVal index As Long, ByVal label As String, _
                         ByVal text As String, _
-                        Optional ByVal newline As Boolean = False, _
-                        Optional ByVal color As String = "")
+                        Optional ByVal newline As Boolean = False)
     EnsureLoaded
     If index < 0 Or index >= mCount Then Exit Sub
     mLabels(index) = label
     mTexts(index) = text
     mNewlines(index) = newline
-    mColors(index) = color
 End Sub
 
 Public Sub DeletePhrase(ByVal index As Long)
@@ -181,7 +169,6 @@ Public Sub DeletePhrase(ByVal index As Long)
         mLabels(i) = mLabels(i + 1)
         mTexts(i) = mTexts(i + 1)
         mNewlines(i) = mNewlines(i + 1)
-        mColors(i) = mColors(i + 1)
     Next i
     mCount = mCount - 1
 End Sub
@@ -197,15 +184,10 @@ Public Function MovePhrase(ByVal index As Long, ByVal delta As Long) As Long
     If index < 0 Or index >= mCount Then Exit Function
     If target < 0 Or target >= mCount Then Exit Function
 
-    Dim tmpLabel As String, tmpText As String, tmpNewline As Boolean, tmpColor As String
-    tmpLabel = mLabels(index): tmpText = mTexts(index)
-    tmpNewline = mNewlines(index): tmpColor = mColors(index)
-
-    mLabels(index) = mLabels(target): mTexts(index) = mTexts(target)
-    mNewlines(index) = mNewlines(target): mColors(index) = mColors(target)
-
-    mLabels(target) = tmpLabel: mTexts(target) = tmpText
-    mNewlines(target) = tmpNewline: mColors(target) = tmpColor
+    Dim tmpLabel As String, tmpText As String, tmpNewline As Boolean
+    tmpLabel = mLabels(index): tmpText = mTexts(index): tmpNewline = mNewlines(index)
+    mLabels(index) = mLabels(target): mTexts(index) = mTexts(target): mNewlines(index) = mNewlines(target)
+    mLabels(target) = tmpLabel: mTexts(target) = tmpText: mNewlines(target) = tmpNewline
 
     MovePhrase = target
 End Function
@@ -237,7 +219,7 @@ Public Sub LoadFromDisk()
     json = ReadUtf8(StorePath())
 
     Dim errMsg As String
-    If Not JsonLite.ParsePhrases(json, mLabels, mTexts, mNewlines, mColors, mCount, errMsg) Then
+    If Not JsonLite.ParsePhrases(json, mLabels, mTexts, mNewlines, mCount, errMsg) Then
         mCount = 0
         UnicodeUI.MsgBoxW "QuickPhrase could not read your phrase file:" & vbCrLf & vbCrLf & _
                StorePath() & vbCrLf & vbCrLf & errMsg & vbCrLf & vbCrLf & _
@@ -250,7 +232,7 @@ Public Function SaveToDisk() As Boolean
     On Error GoTo Fail
 
     EnsureFolder StoreFolder()
-    WriteUtf8 StorePath(), JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mColors, mCount)
+    WriteUtf8 StorePath(), JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mCount)
     SaveToDisk = True
     Exit Function
 
@@ -269,9 +251,7 @@ Public Function ImportFrom(ByVal path As String, ByVal replaceAll As Boolean, _
 
     Dim inLabels() As String, inTexts() As String, inCount As Long
     Dim inNewlines() As Boolean
-    Dim inColors() As String
-    If Not JsonLite.ParsePhrases(ReadUtf8(path), inLabels, inTexts, inNewlines, _
-                                 inColors, inCount, errMsg) Then
+    If Not JsonLite.ParsePhrases(ReadUtf8(path), inLabels, inTexts, inNewlines, inCount, errMsg) Then
         ImportFrom = False
         Exit Function
     End If
@@ -281,7 +261,7 @@ Public Function ImportFrom(ByVal path As String, ByVal replaceAll As Boolean, _
 
     Dim i As Long
     For i = 0 To inCount - 1
-        AddPhrase inLabels(i), inTexts(i), inNewlines(i), inColors(i)
+        AddPhrase inLabels(i), inTexts(i), inNewlines(i)
     Next i
 
     ImportFrom = SaveToDisk()
@@ -296,7 +276,7 @@ Public Function ExportTo(ByVal path As String, ByRef errMsg As String) As Boolea
     On Error GoTo Fail
 
     EnsureLoaded
-    WriteUtf8 path, JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mColors, mCount)
+    WriteUtf8 path, JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mCount)
     ExportTo = True
     Exit Function
 
@@ -325,7 +305,6 @@ Private Sub Grow(ByVal needed As Long)
     ReDim Preserve mLabels(0 To capacity - 1)
     ReDim Preserve mTexts(0 To capacity - 1)
     ReDim Preserve mNewlines(0 To capacity - 1)
-    ReDim Preserve mColors(0 To capacity - 1)
 End Sub
 
 Private Sub SeedDefaults()

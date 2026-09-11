@@ -39,7 +39,6 @@ src/
   modules/
     JsonLite.bas           Minimal JSON reader/writer
     UnicodeUI.bas          MessageBoxW wrapper, for non-Latin text in dialogs
-    PhraseColors.bas       Colour palette, GDI swatch bitmaps, colour picker
     SnippetStore.bas       Phrase list + UTF-8 file I/O
     QuickPhraseRibbon.bas  Ribbon callbacks
     QuickPhraseMain.bas    Insert, manager, import/export, about
@@ -225,18 +224,6 @@ code; dropping one produces stray boxes or lost line breaks.
 
 **`[Content_Types].xml` must be the first zip entry.** `pack.py` enforces the
 order, and `verify` checks it. Word rejects the package otherwise.
-
-**The ribbon cannot colour button text.** customUI offers a label, a screentip
-and an image; there is no styling API. Per-phrase colours are therefore drawn as
-a 16x16 swatch and returned from `getImage` as an `IPictureDisp`. Since the
-colour is chosen at run time it cannot be shipped as a package image, so
-`PhraseColors` builds the bitmap with GDI and wraps it via
-`OleCreatePictureIndirect` with `fPictureOwnsHandle` set — the picture frees the
-bitmap, and deleting the handle afterwards would blank the icon.
-
-`getImage` fires for every button on every invalidate, so swatches are cached per
-colour. `RefreshRibbon` clears that cache before invalidating; without it, a
-reused colour would serve a stale bitmap.
 
 **Buttons need no image.** Ribbon buttons at `size="normal"` render label-only
 quite happily, which is why there are no icon assets to maintain.

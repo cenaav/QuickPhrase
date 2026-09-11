@@ -25,7 +25,6 @@ Public Function ParsePhrases(ByVal json As String, _
                              ByRef labels() As String, _
                              ByRef texts() As String, _
                              ByRef newlines() As Boolean, _
-                             ByRef colors() As String, _
                              ByRef count As Long, _
                              ByRef errMsg As String) As Boolean
     On Error GoTo Fail
@@ -37,7 +36,6 @@ Public Function ParsePhrases(ByVal json As String, _
     ReDim labels(0 To 0)
     ReDim texts(0 To 0)
     ReDim newlines(0 To 0)
-    ReDim colors(0 To 0)
 
     SkipWhitespace
     If Peek() <> "[" Then
@@ -59,7 +57,6 @@ Public Function ParsePhrases(ByVal json As String, _
     ReDim labels(0 To capacity - 1)
     ReDim texts(0 To capacity - 1)
     ReDim newlines(0 To capacity - 1)
-    ReDim colors(0 To capacity - 1)
 
     Do
         SkipWhitespace
@@ -70,11 +67,10 @@ Public Function ParsePhrases(ByVal json As String, _
         End If
         mPos = mPos + 1
 
-        Dim lbl As String, txt As String, nl As Boolean, clr As String
+        Dim lbl As String, txt As String, nl As Boolean
         lbl = ""
         txt = ""
         nl = False
-        clr = ""
 
         SkipWhitespace
         If Peek() <> "}" Then
@@ -102,7 +98,6 @@ Public Function ParsePhrases(ByVal json As String, _
                     Case "label":   lbl = ReadString()
                     Case "text":    txt = ReadString()
                     Case "newline": nl = ReadBool()
-                    Case "color":   clr = ReadString()
                     Case Else:      SkipValue
                 End Select
 
@@ -128,12 +123,10 @@ Public Function ParsePhrases(ByVal json As String, _
             ReDim Preserve labels(0 To capacity - 1)
             ReDim Preserve texts(0 To capacity - 1)
             ReDim Preserve newlines(0 To capacity - 1)
-            ReDim Preserve colors(0 To capacity - 1)
         End If
         labels(count) = lbl
         texts(count) = txt
         newlines(count) = nl
-        colors(count) = clr
         count = count + 1
 
         SkipWhitespace
@@ -160,7 +153,6 @@ End Function
 Public Function SerializePhrases(ByRef labels() As String, _
                                  ByRef texts() As String, _
                                  ByRef newlines() As Boolean, _
-                                 ByRef colors() As String, _
                                  ByVal count As Long) As String
     Dim sb As String
     Dim i As Long
@@ -175,8 +167,7 @@ Public Function SerializePhrases(ByRef labels() As String, _
         sb = sb & "  {" & vbCrLf
         sb = sb & "    ""label"": " & QuoteString(labels(i)) & "," & vbCrLf
         sb = sb & "    ""text"": " & QuoteString(texts(i)) & "," & vbCrLf
-        sb = sb & "    ""newline"": " & LCase$(CStr(newlines(i))) & "," & vbCrLf
-        sb = sb & "    ""color"": " & QuoteString(colors(i)) & vbCrLf
+        sb = sb & "    ""newline"": " & LCase$(CStr(newlines(i))) & vbCrLf
         sb = sb & "  }"
         If i < count - 1 Then sb = sb & ","
         sb = sb & vbCrLf

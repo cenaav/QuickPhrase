@@ -30,7 +30,6 @@ PACKAGE_DIR = REPO_ROOT / "package"
 MODULES = [
     "JsonLite.bas",
     "UnicodeUI.bas",
-    "PhraseColors.bas",
     "SnippetStore.bas",
     "QuickPhraseRibbon.bas",
     "QuickPhraseMain.bas",
@@ -124,15 +123,6 @@ def check_json_valid() -> None:
             and not isinstance(entry["newline"], bool)
         ]
         check(f"{rel} newline flags are boolean", not bad_flag, f"entries: {bad_flag}")
-
-        # Colours are "#RRGGBB" or absent. VBA reads anything else as no colour.
-        bad_color = [
-            i for i, entry in enumerate(data)
-            if isinstance(entry, dict)
-            and entry.get("color")
-            and not re.fullmatch(r"#[0-9A-Fa-f]{6}", str(entry["color"]))
-        ]
-        check(f"{rel} colours are #RRGGBB", not bad_color, f"entries: {bad_color}")
 
 
 def check_favourite_count() -> None:

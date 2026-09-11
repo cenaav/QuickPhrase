@@ -15,10 +15,6 @@ Option Explicit
 ' Index currently shown in the edit boxes, or -1 when nothing is loaded.
 Private mCurrentIndex As Long
 
-' Colour of the phrase being edited, as "#RRGGBB" or "" for none. Held here
-' because a custom colour has no palette entry to read it back from.
-Private mCurrentColor As String
-
 ' Set while the list box is being repopulated, so Change events fired by code
 ' are not mistaken for the user picking a different phrase.
 Private mSuspendEvents As Boolean
@@ -40,13 +36,6 @@ Private Sub UserForm_Initialize()
         Case qpSpaceNone:  cboSpacing.ListIndex = 2
         Case Else:         cboSpacing.ListIndex = 0
     End Select
-
-    cboColor.Clear
-    Dim i As Long
-    For i = 0 To PhraseColors.PaletteCount - 1
-        cboColor.AddItem PhraseColors.PaletteName(i)
-    Next i
-    cboColor.AddItem "Custom..."
 
     cboLocation.Clear
     cboLocation.AddItem "Its own QuickPhrase tab"
@@ -123,16 +112,12 @@ Private Sub LoadEditors(ByVal index As Long)
         txtLabel.text = ""
         txtText.text = ""
         chkNewline.value = False
-        mCurrentColor = ""
-        ShowColor ""
         mCurrentIndex = -1
     Else
         txtLabel.text = SnippetStore.PhraseLabel(index)
         ' MSForms text boxes want vbCrLf for line breaks; the store uses vbLf.
         txtText.text = Replace(SnippetStore.PhraseText(index), vbLf, vbCrLf)
         chkNewline.value = SnippetStore.PhraseNewline(index)
-        mCurrentColor = SnippetStore.PhraseColor(index)
-        ShowColor mCurrentColor
         mCurrentIndex = index
     End If
 
@@ -152,8 +137,7 @@ Private Sub CommitEditors()
     If Len(label) = 0 Then label = Left$(Replace(text, vbLf, " "), 24)
     If Len(label) = 0 Then label = "(untitled)"
 
-    SnippetStore.UpdatePhrase mCurrentIndex, label, text, _
-                              CBool(chkNewline.value), mCurrentColor
+    SnippetStore.UpdatePhrase mCurrentIndex, label, text, CBool(chkNewline.value)
 End Sub
 
 '--- Buttons -------------------------------------------------------------------
@@ -224,62 +208,6 @@ Private Sub btnCancel_Click()
     Unload Me
 End Sub
 
-'--- Colour --------------------------------------------------------------------
-
-' Points the combo at a stored colour, and tints it so the choice is visible
-' without opening the list. Colours outside the palette show as "Custom...".
-Private Sub ShowColor(ByVal hexColor As String)
-    Dim index As Long
-    Dim asColor As Long
-    Dim wasSuspended As Boolean
-
-    ' Save and restore rather than forcing the guard off: LoadEditors calls this
-    ' while its own guard is up, and clearing it early would let the remaining
-    ' assignments fire change events.
-    wasSuspended = mSuspendEvents
-    mSuspendEvents = True
-
-    index = PhraseColors.PaletteIndexOf(hexColor)
-    If index >= 0 Then
-        cboColor.ListIndex = index
-    ElseIf Len(Trim$(hexColor)) > 0 Then
-        cboColor.ListIndex = PhraseColors.PaletteCount   ' the "Custom..." entry
-    Else
-        cboColor.ListIndex = 0
-    End If
-
-    asColor = PhraseColors.HexToColor(hexColor)
-    If asColor < 0 Then
-        cboColor.BackColor = vbWindowBackground
-    Else
-        cboColor.BackColor = asColor
-    End If
-
-    mSuspendEvents = wasSuspended
-End Sub
-
-Private Sub cboColor_Change()
-    If mSuspendEvents Then Exit Sub
-    If mCurrentIndex < 0 Then Exit Sub
-
-    If cboColor.ListIndex = PhraseColors.PaletteCount Then
-        ' "Custom..." - open the Windows colour dialog. On cancel, put the combo
-        ' back where it was rather than leaving it on an entry that means nothing.
-        Dim picked As String
-        picked = mCurrentColor
-        If PhraseColors.PickCustomColor(picked) Then
-            mCurrentColor = picked
-        End If
-        ShowColor mCurrentColor
-    Else
-        mCurrentColor = PhraseColors.PaletteHex(cboColor.ListIndex)
-        ShowColor mCurrentColor
-    End If
-
-    ' Write straight through, so the colour survives switching phrases.
-    CommitEditors
-End Sub
-
 '--- Spacing preference --------------------------------------------------------
 
 ' Applies to every phrase, so it is stored as a setting rather than with the
@@ -317,7 +245,6 @@ Private Sub UpdateEnabledState()
     txtLabel.Enabled = (index >= 0)
     txtText.Enabled = (index >= 0)
     chkNewline.Enabled = (index >= 0)
-    cboColor.Enabled = (index >= 0)
 
     If count > QuickPhraseRibbon.FAV_COUNT Then
         lblHint.Caption = "The first " & QuickPhraseRibbon.FAV_COUNT & _

@@ -101,7 +101,6 @@ end SCREENSHOTS -->
 | 🌍 | **Persian, Arabic, Hebrew, emoji** | UTF-8 throughout, and insertion via Word's own typing engine, so RTL text keeps its direction. |
 | ↕️ | **Reorderable** | Up/Down decides which phrases earn a ribbon button. |
 | 🏠 | **Put it in the Home tab** | Keep the dedicated tab, move the buttons into Home, or show both — no tab switching while you type. |
-| 🎨 | **Colour tags** | Give a phrase a coloured marker so a long list stays scannable. Eleven presets plus any custom colour. |
 | 💾 | **One plain JSON file** | Human-readable, hand-editable, easy to back up or put in a synced folder. |
 | 📤 | **Import / export** | Share a phrase set with colleagues. Import replaces or appends, your choice. |
 | 🚫 | **No background process** | It is a Word template. Nothing runs when Word is closed. |
@@ -156,7 +155,6 @@ Phrases past the first twelve live in the **All Phrases** dropdown, which has no
 | **Text inserted at the cursor** | What actually goes into your document — multiple lines allowed |
 | **Start a new line after inserting** | Ends the paragraph after this phrase |
 | **Add a space** | Where the automatic space goes — applies to every phrase |
-| **Colour tag** | A coloured marker beside this phrase on the ribbon |
 | **Show buttons on** | Own QuickPhrase tab, inside the Home tab, or both |
 | **New / Delete** | Add or remove a phrase |
 | **Up / Down** | Reorder — the first 12 become ribbon buttons |
@@ -186,24 +184,6 @@ table cell boundary next to the cursor, so you never get a double space.
 **Start a new line after inserting this phrase** is a per-phrase tick box. Use
 it for sign-offs and list items, where the next thing you type should begin on
 a fresh line.
-
-### Colour tags
-
-Once you have a dozen phrases, similar labels start to blur together. A colour
-tag makes one findable at a glance.
-
-Pick one from **Colour tag** in *Manage Phrases*: eleven presets, or
-**Custom…** to open the standard Windows colour picker for anything else.
-The default is no colour, and phrases without one look exactly as before.
-
-> **What this actually looks like.** The colour appears as a small coloured
-> square beside the phrase on the ribbon — not as a background behind the text.
-> Word's ribbon has no way to set a background colour on button text: customUI
-> exposes a label, a screentip and an icon, and nothing else. The swatch is the
-> closest thing Word allows, and it does the job of telling phrases apart.
-
-Colours are stored per phrase in `snippets.json` as `"color": "#RRGGBB"`, so
-they travel with an export and can be edited by hand.
 
 ### Where the buttons appear
 
@@ -254,21 +234,18 @@ UTF-8 JSON, no BOM, safe to edit in any text editor:
   {
     "label": "Best regards",
     "text": "Best regards,\nJane Doe\nSenior Editor",
-    "newline": true,
-    "color": "#BDD7EE"
+    "newline": true
   },
   {
     "label": "سلام",
     "text": "سلام",
-    "newline": false,
-    "color": ""
+    "newline": false
   }
 ]
 ```
 
-Use `\n` for line breaks. `newline` and `color` are both optional — they default
-to `false` and no colour. `color` takes any `#RRGGBB` value. After editing the
-file outside Word, click **Reload** on the ribbon.
+Use `\n` for line breaks. `newline` is optional and defaults to `false`. After
+editing the file outside Word, click **Reload** on the ribbon.
 
 A fresh install starts with exactly two phrases, `Hello` and `سلام`, so both
 scripts are visibly working from the first launch.
@@ -557,7 +534,6 @@ crediting where it came from.
 | **Text inserted at the cursor** | متنی که واقعاً در سند درج می‌شود — چند خطی هم می‌تواند باشد |
 | **Start a new line after inserting** | بعد از این عبارت، پاراگراف را تمام می‌کند و به خط بعد می‌رود |
 | **Add a space** | محل قرارگرفتن فاصلهٔ خودکار — روی همهٔ عبارت‌ها اعمال می‌شود |
-| **Colour tag** | مربع رنگی کنار این عبارت روی نوار ابزار |
 | **Show buttons on** | تب اختصاصی QuickPhrase، داخل تب Home، یا هر دو |
 | **New / Delete** | افزودن یا حذف عبارت |
 | **Up / Down** | تغییر ترتیب — دوازده مورد اول به دکمهٔ نوار ابزار تبدیل می‌شوند |
@@ -582,16 +558,6 @@ crediting where it came from.
 اگر کنار نشانگر از قبل فاصله، علامت پایان پاراگراف یا مرز خانهٔ جدول باشد، فاصلهٔ اضافه درج نمی‌شود — پس هرگز دو فاصلهٔ پشت‌سرهم نمی‌گیرید.
 
 گزینهٔ **Start a new line after inserting this phrase** برای هر عبارت جداگانه تنظیم می‌شود. برای امضاها و آیتم‌های فهرست مناسب است؛ جایی که می‌خواهید ادامهٔ تایپ از خط بعد شروع شود.
-
-### برچسب رنگی
-
-وقتی تعداد عبارت‌ها به بیش از ده مورد می‌رسد، برچسب‌های شبیه به هم قاطی می‌شوند. یک برچسب رنگی باعث می‌شود عبارت موردنظر در یک نگاه پیدا شود.
-
-در پنجرهٔ *Manage Phrases* از بخش **Colour tag** یک رنگ انتخاب کنید: یازده رنگ آماده، یا گزینهٔ **Custom…** که پنجرهٔ انتخاب رنگ خود ویندوز را باز می‌کند تا هر رنگ دلخواهی را بردارید. حالت پیش‌فرض «بدون رنگ» است و عبارت‌های بدون رنگ دقیقاً مثل قبل نمایش داده می‌شوند.
-
-> **این رنگ دقیقاً کجا دیده می‌شود؟** رنگ به شکل یک مربع کوچک رنگی **کنار** عبارت روی نوار ابزار ظاهر می‌شود، نه به‌صورت پس‌زمینهٔ پشت متن. نوار ابزار Word اصلاً امکان تعیین رنگ پس‌زمینه برای متن دکمه را ندارد؛ customUI فقط برچسب، راهنمای ابزار و آیکون را در اختیار می‌گذارد و نه چیز دیگری. این مربع رنگی نزدیک‌ترین چیزی است که Word اجازه می‌دهد و همان کار تفکیک عبارت‌ها را انجام می‌دهد.
-
-رنگ‌ها برای هر عبارت در فایل `snippets.json` با کلید `"color": "#RRGGBB"` ذخیره می‌شوند، پس همراه خروجی Export منتقل می‌شوند و دستی هم قابل ویرایش‌اند.
 
 ### محل قرارگرفتن دکمه‌ها
 
@@ -630,19 +596,17 @@ crediting where it came from.
   {
     "label": "با تشکر",
     "text": "با تشکر و احترام\nنام شما",
-    "newline": true,
-    "color": "#BDD7EE"
+    "newline": true
   },
   {
     "label": "سلام",
     "text": "سلام",
-    "newline": false,
-    "color": ""
+    "newline": false
   }
 ]
 ```
 
-برای خط جدید از `\n` استفاده کنید. کلیدهای `newline` و `color` هر دو اختیاری‌اند و مقدار پیش‌فرضشان `false` و «بدون رنگ» است. کلید `color` هر مقدار `#RRGGBB` را می‌پذیرد. اگر فایل را بیرون از Word ویرایش کردید، روی دکمهٔ **Reload** در نوار ابزار کلیک کنید.
+برای خط جدید از `\n` استفاده کنید. کلید `newline` اختیاری است و مقدار پیش‌فرضش `false` است. اگر فایل را بیرون از Word ویرایش کردید، روی دکمهٔ **Reload** در نوار ابزار کلیک کنید.
 
 نصب تازه دقیقاً با دو عبارت شروع می‌شود: `Hello` و `سلام` — تا از همان اجرای اول ببینید هر دو خط (لاتین و فارسی) درست کار می‌کنند.
 

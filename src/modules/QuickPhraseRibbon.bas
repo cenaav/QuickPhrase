@@ -28,7 +28,6 @@ End Sub
 ' ribbon refreshes the next time Word rebuilds it, so failing quietly is right.
 Public Sub RefreshRibbon()
     On Error Resume Next
-    PhraseColors.ClearCache
     If Not mRibbon Is Nothing Then mRibbon.Invalidate
 End Sub
 
@@ -60,22 +59,6 @@ End Sub
 
 Public Sub GetFavVisible(control As IRibbonControl, ByRef returnedVal)
     returnedVal = (IndexFromButtonId(control.id) < SnippetStore.PhraseCount)
-End Sub
-
-' The colour swatch standing in for a background colour, which the ribbon does
-' not support on button text. Phrases with no colour return nothing, leaving the
-' button label-only exactly as before.
-Public Sub GetFavImage(control As IRibbonControl, ByRef returnedVal)
-    Dim index As Long
-    Dim swatch As IPictureDisp
-
-    index = IndexFromControl(control)
-    If index < 0 Or index >= SnippetStore.PhraseCount Then Exit Sub
-
-    Set swatch = PhraseColors.SwatchFor(SnippetStore.PhraseColor(index))
-    If swatch Is Nothing Then Exit Sub
-
-    Set returnedVal = swatch
 End Sub
 
 Public Sub GetFavScreentip(control As IRibbonControl, ByRef returnedVal)
@@ -122,7 +105,6 @@ Public Sub GetMenuContent(control As IRibbonControl, ByRef returnedVal)
             sb = sb & "<button id=""" & prefix & "Dyn" & i & """" & _
                       " label=""" & XmlAttr(MenuLabel(i)) & """" & _
                       " tag=""" & i & """" & _
-                      " getImage=""GetFavImage""" & _
                       " onAction=""OnPhraseClick"" />"
         Next i
     End If
@@ -153,7 +135,15 @@ End Function
 ' Serves both the fixed Favorites buttons and the dynamic menu entries. Menu
 ' items carry their index in tag; fixed buttons carry it in their id.
 Public Sub OnPhraseClick(control As IRibbonControl)
-    QuickPhraseMain.InsertPhrase IndexFromControl(control)
+    Dim index As Long
+
+    If Len(control.tag) > 0 Then
+        index = CLng(control.tag)
+    Else
+        index = IndexFromButtonId(control.id)
+    End If
+
+    QuickPhraseMain.InsertPhrase index
 End Sub
 
 Public Sub OnManage(control As IRibbonControl)
@@ -178,20 +168,6 @@ Public Sub OnAbout(control As IRibbonControl)
 End Sub
 
 '--- Helpers -------------------------------------------------------------------
-
-' Resolves any phrase control to its index. Menu entries are generated at click
-' time and carry their index in tag; the fixed ribbon buttons carry it in their
-' id. Both routes end up here so callbacks never have to care which they got.
-Private Function IndexFromControl(control As IRibbonControl) As Long
-    If Len(control.tag) > 0 Then
-        If IsNumeric(control.tag) Then
-            IndexFromControl = CLng(control.tag)
-            Exit Function
-        End If
-    End If
-
-    IndexFromControl = IndexFromButtonId(control.id)
-End Function
 
 ' "qpBtn07" and "qpHomeBtn07" both mean phrase 7, which is index 6. The two
 ' placements need distinct control ids, but they share every callback, so the
