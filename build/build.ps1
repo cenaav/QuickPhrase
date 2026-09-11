@@ -142,7 +142,9 @@ $controls = @(
        Props=@{ Caption='' } }
 
     @{ Type='Forms.CommandButton.1'; Name='btnSave';   Left=430; Top=320; Width=110; Height=24
-       Props=@{ Caption='Save && Close'; Default=$true } }
+       # MSForms takes Caption literally - the accelerator key is a separate
+       # property - so a doubled ampersand renders as one on the button.
+       Props=@{ Caption='Save & Close'; Default=$true } }
     @{ Type='Forms.CommandButton.1'; Name='btnCancel'; Left=546; Top=320; Width=98;  Height=24
        Props=@{ Caption='Cancel'; Cancel=$true } }
 )
