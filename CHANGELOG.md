@@ -29,13 +29,22 @@ All notable changes to QuickPhrase are recorded here. Format follows
   `-ExportVba` to emit the compiled VBA project for committing.
 - `build/pack.py`, assembling the `.dotm` from `package/` on any OS with no Word
   installed, plus `explode` and `verify` subcommands.
+- `build-and-push.cmd`, a double-clickable Windows script that pulls, rebuilds
+  the VBA project with Word, restores the Trust Center setting, then commits and
+  pushes only the compiled blob.
 - `build/check_sources.py`, static checks on the links the build makes by name:
-  ribbon callbacks, dialog control names, favourite count across both namespaces.
+  ribbon callbacks, dialog control names, favourite count across both namespaces,
+  and that a fresh install seeds exactly the two starter phrases.
 - GitHub Actions: `ci.yml` validates and packs on every push; `release.yml`
   publishes `QuickPhrase.dotm` and an installer bundle on a version tag.
 - `package/`, the template stored as its individual OOXML parts.
 - `install/Install.bat` and `Uninstall.bat`, clearing mark-of-the-web on install.
 - Persian and English starter phrase packs in `examples/`.
+
+### Documentation
+- README rewritten with complete English and Persian sections covering install,
+  usage, spacing and line-break settings, the phrase file format, compatibility
+  and troubleshooting.
 
 ### Changed
 - Ships two starter phrases, `Hello` and `سلام`, instead of four.

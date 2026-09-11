@@ -56,6 +56,8 @@ package/                   The .dotm, exploded
     vbaProject.bin         Compiled VBA (binary, committed)
   docProps/
 
+build-and-push.cmd         Rebuild the VBA project and push it (Windows)
+
 build/
   pack.py                  package/ + src/customUI -> .dotm  (any OS)
   build.ps1                VBA source -> vbaProject.bin      (Windows + Word)
@@ -80,7 +82,19 @@ python3 build/pack.py pack
 python3 build/pack.py verify
 ```
 
-Changing VBA under `src/` — needs Windows and Word once:
+Changing VBA under `src/` — needs Windows and Word once. Easiest route is to
+double-click:
+
+```
+build-and-push.cmd
+```
+
+It refuses to run while Word is open, pulls, rebuilds, restores the Trust
+Center setting even if the build fails, then commits and pushes **only**
+`package/word/vbaProject.bin`. Other modified files are listed and left
+uncommitted, so it cannot push work that was not ready.
+
+By hand:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba

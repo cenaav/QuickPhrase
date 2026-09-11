@@ -14,11 +14,13 @@ Click a button, the text appears at your cursor. No clipboard, no retyping, no d
 [![Word 2007–365](https://img.shields.io/badge/Word-2007%20%E2%80%93%20365-2B579A?logo=microsoftword&logoColor=white)](#compatibility)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows&logoColor=white)](#compatibility)
 
-[**Download**](https://github.com/cenaav/QuickPhrase/releases) ·
-[Install guide](docs/INSTALL.md) ·
+**English** · [فارسی](#فارسی)
+
+[**Download**](https://github.com/cenaav/QuickPhrase/releases/latest) ·
+[Install](#install) ·
+[How to use](#how-to-use-it) ·
 [FAQ](#faq) ·
-[Build from source](docs/DEVELOPING.md) ·
-[نصب فارسی](#نصب-فارسی)
+[Build from source](#building-from-source)
 
 </div>
 
@@ -64,10 +66,10 @@ Type in your document. Click a button. The text lands exactly where the cursor i
 | 📜 | **Unlimited phrases in a dropdown** | The **All Phrases** menu holds as many as you like, one click deeper. |
 | ✏️ | **Visual editor** | Add, edit, reorder and delete in a dialog. The ribbon updates instantly — no restarting Word. |
 | 🏷️ | **Short label, long text** | A button reading `Signature` can insert five lines of contact details. |
+| ␣ | **Automatic spacing** | A space is added so phrases never run into the previous word — and skipped when there is already one. |
+| ↵ | **Optional line break** | Flag a phrase to end the paragraph after inserting, for sign-offs and list items. |
 | 🌍 | **Persian, Arabic, Hebrew, emoji** | UTF-8 throughout, and insertion via Word's own typing engine, so RTL text keeps its direction. |
 | ↕️ | **Reorderable** | Up/Down decides which phrases earn a ribbon button. |
-| ␣ | **Automatic spacing** | A space is added so clicked phrases never run into the previous word — and skipped when there is already one. |
-| ↵ | **Optional line break** | Flag a phrase to end the paragraph after inserting, for sign-offs and list items. |
 | 💾 | **One plain JSON file** | Human-readable, hand-editable, easy to back up or put in a synced folder. |
 | 📤 | **Import / export** | Share a phrase set with colleagues. Import replaces or appends, your choice. |
 | 🚫 | **No background process** | It is a Word template. Nothing runs when Word is closed. |
@@ -93,25 +95,16 @@ To remove it, double-click `Uninstall.bat`. Your phrases are kept.
 > folder, so one file copy is unavoidable — for QuickPhrase and for every other
 > Word add-in. `Install.bat` reduces that to one double-click.
 
-Manual installation and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**
+### Installing by hand
 
-### نصب فارسی
+1. Close Word completely.
+2. Right-click `QuickPhrase.dotm` → **Properties**. If there is an **Unblock**
+   checkbox, tick it and press OK.
+3. Press <kbd>Win</kbd>+<kbd>R</kbd>, paste `%APPDATA%\Microsoft\Word\STARTUP`, Enter.
+4. Copy `QuickPhrase.dotm` into that folder.
+5. Start Word.
 
-۱. آخرین نسخه را از صفحهٔ [Releases](https://github.com/cenaav/QuickPhrase/releases/latest) دانلود و فایل zip را باز کنید.
-۲. Word را کامل ببندید.
-۳. روی **`Install.bat`** دوبار کلیک کنید.
-۴. Word را باز کنید — تب **QuickPhrase** کنار Home ظاهر می‌شود.
-
-دسترسی ادمین لازم نیست.
-
-**اگر تب ظاهر نشد**، ماکروها غیرفعال هستند:
-`File → Options → Trust Center → Trust Center Settings → Macro Settings`
-گزینهٔ **Disable all macros with notification** را انتخاب کنید (نه `without notification`).
-
-**عبارت‌های شما اینجا ذخیره می‌شوند:**
-`%APPDATA%\QuickPhrase\snippets.json`
-
-فایل با کدگذاری UTF-8 است، پس متن فارسی و عربی سالم می‌ماند. برای جهت راست‌به‌چپ، جهت پاراگراف را در تب Home تعیین کنید.
+Troubleshooting lives in **[docs/INSTALL.md](docs/INSTALL.md)**.
 
 ## How to use it
 
@@ -125,17 +118,40 @@ Phrases past the first twelve live in the **All Phrases** dropdown, which has no
 
 **QuickPhrase → Manage Phrases…**
 
-| Field | What it is |
+| Control | What it does |
 |---|---|
 | **Button label** | The short text shown on the ribbon button |
 | **Text inserted at the cursor** | What actually goes into your document — multiple lines allowed |
+| **Start a new line after inserting** | Ends the paragraph after this phrase |
+| **Add a space** | Where the automatic space goes — applies to every phrase |
+| **New / Delete** | Add or remove a phrase |
+| **Up / Down** | Reorder — the first 12 become ribbon buttons |
+| **Save & Close / Cancel** | Commit or discard everything |
 
-These are separate on purpose. A button labelled `Disclaimer` can insert an
-entire paragraph.
+Label and text are separate on purpose. A button labelled `Disclaimer` can
+insert an entire paragraph.
 
-Order matters: the **first 12 phrases become ribbon buttons**, so use **Up** and
-**Down** to promote the ones you reach for most. Changes appear on the ribbon as
-soon as you press **Save & Close**.
+Changes appear on the ribbon as soon as you press **Save & Close** — Word does
+not need restarting.
+
+### Spacing and line breaks
+
+Two settings stop clicked phrases from colliding with the text around them.
+
+**Add a space** applies to every phrase:
+
+| Choice | Result |
+|---|---|
+| **Before the phrase** *(default)* | `Hello` clicked after `Say` gives `Say Hello` |
+| **After the phrase** | the space goes on the other side, for building a sentence forwards |
+| **No space** | inserted exactly as stored |
+
+The space is skipped when there is already whitespace, a paragraph mark or a
+table cell boundary next to the cursor, so you never get a double space.
+
+**Start a new line after inserting this phrase** is a per-phrase tick box. Use
+it for sign-offs and list items, where the next thing you type should begin on
+a fresh line.
 
 ### Sharing a phrase set
 
@@ -146,25 +162,6 @@ Two ready-made sets ship in [`examples/`](examples/):
 
 - [`persian-starter.json`](examples/persian-starter.json) — Persian greetings and sign-offs
 - [`english-business.json`](examples/english-business.json) — English business correspondence
-
-### Spacing and line breaks
-
-Two settings stop clicked phrases from colliding with the text around them.
-
-**Add a space** (in *Manage Phrases*, applies to every phrase):
-
-| Choice | Result |
-|---|---|
-| **Before the phrase** *(default)* | `Hello` typed after `Say` gives `Say Hello` |
-| **After the phrase** | the space goes on the other side, for building a sentence forwards |
-| **No space** | inserted exactly as stored |
-
-The space is skipped when there is already whitespace, a paragraph mark or a
-table cell boundary next to the cursor, so you never get a double space.
-
-**Start a new line after inserting this phrase** is a per-phrase tick box. Use it
-for sign-offs and list items, where the next thing you type should begin on a
-fresh line.
 
 ## Where your phrases are stored
 
@@ -189,9 +186,11 @@ UTF-8 JSON, no BOM, safe to edit in any text editor:
 ]
 ```
 
-Use `\n` for line breaks. `newline` is optional and defaults to `false`; set it
-to `true` to end the paragraph after inserting. After editing the file outside
-Word, click **Reload** on the ribbon to pick up the changes.
+Use `\n` for line breaks. `newline` is optional and defaults to `false`. After
+editing the file outside Word, click **Reload** on the ribbon.
+
+A fresh install starts with exactly two phrases, `Hello` and `سلام`, so both
+scripts are visibly working from the first launch.
 
 Want the same phrases on several machines? Put this file in a cloud-synced
 folder and symlink it.
@@ -308,7 +307,8 @@ can bind a key to a macro, and you can write a one-line macro calling
 
 Yes, and that was a design goal. The phrase file is UTF-8, and text is inserted
 through Word's own typing mechanism, so bidirectional text behaves exactly as if
-you had typed it.
+you had typed it. Dialogs use the Unicode Windows API, so Persian labels show
+correctly in confirmation messages.
 
 One honest limitation: the **Manage Phrases** dialog is left-to-right. VBA dialog
 controls have no right-to-left mode, so Persian text displays correctly but the
@@ -330,7 +330,7 @@ need whoever administers it to allow the file.
 The repository contains source only. `QuickPhrase.dotm` is a build artifact,
 attached to each [Release](https://github.com/cenaav/QuickPhrase/releases).
 
-Anyone can build it, on any OS:
+**Anyone can build it, on any OS, with no Word installed:**
 
 ```bash
 python3 build/check_sources.py   # validate the sources
@@ -338,18 +338,29 @@ python3 build/pack.py pack       # assemble dist/QuickPhrase.dotm
 python3 build/pack.py verify     # structural checks
 ```
 
-That works with no Word and no Windows, because the `.dotm` is stored **exploded
-into its XML parts** under [`package/`](package/) — all diffable text — plus one
-committed binary, `package/word/vbaProject.bin`, the compiled VBA project.
+That works because the `.dotm` is stored **exploded into its XML parts** under
+[`package/`](package/) — all diffable text — plus one committed binary,
+`package/word/vbaProject.bin`, the compiled VBA project.
 
-That single blob is the only thing Word itself must produce. Regenerate it only
-when the VBA source changes, on a Windows machine with Word:
+That single blob is the only thing Word itself must produce. **If you changed
+anything under `src/`, it has to be regenerated** on Windows with Word:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba
+```
+build-and-push.cmd
 ```
 
-This is also what lets GitHub Actions publish releases from a Linux runner.
+Double-click it. It pulls, rebuilds with Word, restores the Trust Center
+setting, then commits and pushes just the blob — any other files you changed
+are listed and left alone.
+
+Prefer to do it step by step:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba -EnableVbomTrust
+powershell -ExecutionPolicy Bypass -File build\build.ps1 -DisableVbomTrust
+git add package/word/vbaProject.bin && git commit -m "build: rebuild VBA project" && git push
+```
+
 Design notes, gotchas and the release checklist:
 **[docs/DEVELOPING.md](docs/DEVELOPING.md)**
 
@@ -392,10 +403,215 @@ sell it. The only requirement is that you keep the copyright and licence notice,
 crediting where it came from.
 
 ---
+---
+
+<div dir="rtl">
+
+<div align="center">
+
+# فارسی
+
+### درج عبارت‌های پرکاربرد در Microsoft Word تنها با یک کلیک
+
+**یک افزونهٔ رایگان و متن‌باز برای Word که جمله‌های پرتکرار شما را به دکمه‌های نوار ابزار تبدیل می‌کند.**
+روی دکمه کلیک می‌کنید، متن دقیقاً همان‌جا که نشانگر است درج می‌شود. بدون کلیپ‌بورد، بدون تایپ دوباره.
+
+[English](#quickphrase) · **فارسی**
+
+</div>
+
+## مشکل چیست؟
+
+اگر کارتان با Word است، تمام روز یک متن را دوباره و دوباره تایپ می‌کنید. امضای پایان نامه، بندهای قراردادی، دستور دارویی، سلام و احوال‌پرسی، بند سیاست بازگشت وجه.
+
+راه‌حل‌های خود Word هرکدام اول چیزی از شما می‌خواهند:
+
+- **AutoCorrect** باید یک مخفف را حفظ کنید.
+- **AutoText / Quick Parts** باید نام ورودی را به یاد بیاورید و در گالری بگردید.
+- **کپی از یک فایل جداگانه** یک پنجرهٔ دوم می‌خواهد و کلیپ‌بورد را خراب می‌کند.
+- **نرم‌افزارهای text expander** پردازش پس‌زمینه، حساب کاربری یا اشتراک می‌خواهند.
+
+همه‌شان یک مرحلهٔ «به‌یادآوردن» بین شما و متن می‌گذارند. QuickPhrase این مرحله را حذف می‌کند: عبارت‌های شما **دیده می‌شوند** — به شکل دکمه‌هایی با برچسب، روی نوار ابزار.
+
+## نصب
+
+**[⬇ دانلود آخرین نسخه](https://github.com/cenaav/QuickPhrase/releases/latest)**
+
+۱. فایل `QuickPhrase-vX.Y.Z.zip` را دانلود و از حالت فشرده خارج کنید.
+۲. Word را **کاملاً ببندید**.
+۳. روی **`Install.bat`** دوبار کلیک کنید.
+۴. Word را باز کنید. تب **QuickPhrase** کنار Home ظاهر می‌شود.
+
+به دسترسی ادمین نیازی نیست. اسکریپت یک فایل قالب را در مسیر
+`%APPDATA%\Microsoft\Word\STARTUP\`
+کپی می‌کند و نشانهٔ «دانلود شده از اینترنت» را پاک می‌کند — نشانه‌ای که در غیر این صورت باعث می‌شود Word بدون هیچ پیامی ماکروها را غیرفعال کند.
+
+برای حذف، روی `Uninstall.bat` دوبار کلیک کنید. عبارت‌های شما پاک نمی‌شوند.
+
+> **چرا نمی‌شود بدون نصب کار کرد؟** Word افزونه‌ها را فقط از پوشهٔ `STARTUP` به‌صورت خودکار بارگذاری می‌کند. بنابراین کپی‌کردن یک فایل اجتناب‌ناپذیر است — برای QuickPhrase و برای هر افزونهٔ دیگر Word. کار `Install.bat` این است که این مرحله را به یک دوبار-کلیک کاهش دهد.
+
+### نصب دستی
+
+۱. Word را کاملاً ببندید.
+۲. روی `QuickPhrase.dotm` راست‌کلیک کنید ← **Properties**. اگر گزینهٔ **Unblock** وجود داشت، تیک بزنید و OK کنید.
+۳. کلید <kbd>Win</kbd>+<kbd>R</kbd> را بزنید، عبارت `%APPDATA%\Microsoft\Word\STARTUP` را وارد و Enter کنید.
+۴. فایل `QuickPhrase.dotm` را در آن پوشه کپی کنید.
+۵. Word را باز کنید.
+
+## طرز کار
+
+### درج متن
+
+نشانگر را جایی که می‌خواهید متن درج شود بگذارید و روی دکمهٔ عبارت کلیک کنید. همین.
+
+عبارت‌های بعد از دوازدهمین مورد، در منوی کشویی **All Phrases** قرار می‌گیرند که محدودیتی ندارد.
+
+### افزودن و ویرایش عبارت‌ها
+
+**QuickPhrase ← Manage Phrases…**
+
+| بخش | کارکرد |
+|---|---|
+| **Button label** | متن کوتاهی که روی دکمهٔ نوار ابزار دیده می‌شود |
+| **Text inserted at the cursor** | متنی که واقعاً در سند درج می‌شود — چند خطی هم می‌تواند باشد |
+| **Start a new line after inserting** | بعد از این عبارت، پاراگراف را تمام می‌کند و به خط بعد می‌رود |
+| **Add a space** | محل قرارگرفتن فاصلهٔ خودکار — روی همهٔ عبارت‌ها اعمال می‌شود |
+| **New / Delete** | افزودن یا حذف عبارت |
+| **Up / Down** | تغییر ترتیب — دوازده مورد اول به دکمهٔ نوار ابزار تبدیل می‌شوند |
+| **Save & Close / Cancel** | ذخیره یا لغو همهٔ تغییرات |
+
+برچسب و متن عمداً از هم جدا هستند: دکمه‌ای با برچسب `امضا` می‌تواند پنج خط اطلاعات تماس درج کند.
+
+تغییرات بلافاصله پس از زدن **Save & Close** روی نوار ابزار اعمال می‌شوند — نیازی به بستن و باز کردن Word نیست.
+
+### فاصله و خط جدید
+
+دو تنظیم وجود دارد تا عبارت درج‌شده به متن اطرافش نچسبد.
+
+**Add a space** روی همهٔ عبارت‌ها اعمال می‌شود:
+
+| گزینه | نتیجه |
+|---|---|
+| **Before the phrase** *(پیش‌فرض)* | کلیک روی `Hello` بعد از `Say` نتیجه می‌دهد `Say Hello` |
+| **After the phrase** | فاصله در سمت دیگر قرار می‌گیرد |
+| **No space** | دقیقاً همان‌طور که ذخیره شده درج می‌شود |
+
+اگر کنار نشانگر از قبل فاصله، علامت پایان پاراگراف یا مرز خانهٔ جدول باشد، فاصلهٔ اضافه درج نمی‌شود — پس هرگز دو فاصلهٔ پشت‌سرهم نمی‌گیرید.
+
+گزینهٔ **Start a new line after inserting this phrase** برای هر عبارت جداگانه تنظیم می‌شود. برای امضاها و آیتم‌های فهرست مناسب است؛ جایی که می‌خواهید ادامهٔ تایپ از خط بعد شروع شود.
+
+### اشتراک‌گذاری مجموعهٔ عبارت‌ها
+
+با **Export…** یک فایل `.json` ذخیره می‌شود. طرف مقابل با **Import…** آن را بارگذاری می‌کند و انتخاب می‌کند که جایگزین فهرست فعلی شود یا به آن اضافه گردد.
+
+دو مجموعهٔ آماده در پوشهٔ [`examples/`](examples/) موجود است.
+
+## محل ذخیرهٔ عبارت‌ها
+
+```
+%APPDATA%\QuickPhrase\snippets.json
+```
+
+فایل JSON با کدگذاری UTF-8 و بدون BOM است و می‌توانید با هر ویرایشگر متنی آن را تغییر دهید:
+
+```json
+[
+  {
+    "label": "با تشکر",
+    "text": "با تشکر و احترام\nنام شما",
+    "newline": true
+  },
+  {
+    "label": "سلام",
+    "text": "سلام",
+    "newline": false
+  }
+]
+```
+
+برای خط جدید از `\n` استفاده کنید. کلید `newline` اختیاری است و مقدار پیش‌فرضش `false` است. اگر فایل را بیرون از Word ویرایش کردید، روی دکمهٔ **Reload** در نوار ابزار کلیک کنید.
+
+نصب تازه دقیقاً با دو عبارت شروع می‌شود: `Hello` و `سلام` — تا از همان اجرای اول ببینید هر دو خط (لاتین و فارسی) درست کار می‌کنند.
+
+## سازگاری
+
+| | پشتیبانی |
+|---|---|
+| **Microsoft Word** | ۲۰۰۷، ۲۰۱۰، ۲۰۱۳، ۲۰۱۶، ۲۰۱۹، ۲۰۲۱، ۲۰۲۴، Microsoft 365 |
+| **سیستم‌عامل** | ویندوز (۷ به بالا) |
+| **معماری Word** | ۳۲ بیتی و ۶۴ بیتی |
+| **Word مک** | ❌ پشتیبانی نمی‌شود — VBA در مک نمی‌تواند تب نوار ابزار بسازد |
+| **Word آنلاین** | ❌ پشتیبانی نمی‌شود — VBA ندارد |
+
+## پرسش‌های متداول
+
+**آیا رایگان است؟ برای کار تجاری هم می‌شود استفاده کرد؟**
+بله. مجوز [MIT](LICENSE) است: استفاده، تغییر، بازانتشار و حتی فروش آزاد است. تنها شرط این است که متن کپی‌رایت و مجوز را نگه دارید — یعنی ذکر کنید از کجا آمده است.
+
+**آیا اطلاعات من جایی ارسال می‌شود؟**
+خیر. در کل پروژه هیچ کد شبکه‌ای وجود ندارد. عبارت‌های شما فقط در یک فایل روی دیسک خودتان هستند.
+
+**آیا در پس‌زمینه اجرا می‌شود و سیستم را کند می‌کند؟**
+خیر. QuickPhrase یک قالب Word است، نه یک برنامه. وقتی Word بسته است هیچ چیزی اجرا نمی‌شود.
+
+**چرا Word دربارهٔ ماکرو هشدار می‌دهد؟**
+چون QuickPhrase **خودش** یک ماکرو است؛ افزودن تب به نوار ابزار در Word فقط از این راه ممکن است. کل کد منبع در همین مخزن قابل مطالعه است.
+
+**تب QuickPhrase ظاهر نشد، چه کار کنم؟**
+تقریباً همیشه یکی از این دو: فایل هنوز نشانهٔ «دانلود شده از اینترنت» دارد، یا ماکروها غیرفعال‌اند. مسیر بررسی ماکرو:
+`File ← Options ← Trust Center ← Trust Center Settings ← Macro Settings`
+گزینهٔ **Disable all macros with notification** را انتخاب کنید، نه `without notification`.
+راهنمای کامل: [docs/INSTALL.md](docs/INSTALL.md#troubleshooting)
+
+**می‌شود بیشتر از ۱۲ دکمه روی نوار ابزار داشت؟**
+عدد ۱۲ یک محدودیت عمدی است: XML نوار ابزار فقط یک بار هنگام شروع Word خوانده می‌شود و قابل بازسازی نیست، پس دکمه‌ها باید از قبل تعریف شده باشند. هر تعداد بیشتر، در منوی **All Phrases** در دسترس است.
+
+**آیا با فارسی و عربی کار می‌کند؟**
+بله، و این یکی از اهداف طراحی بود. فایل عبارت‌ها UTF-8 است و متن از طریق موتور تایپ خود Word درج می‌شود، پس متن دوجهته دقیقاً مثل حالتی رفتار می‌کند که خودتان تایپ کرده باشید. پیام‌های تأیید هم از API یونیکد ویندوز استفاده می‌کنند تا برچسب‌های فارسی درست نمایش داده شوند.
+
+یک محدودیت که باید صادقانه گفته شود: پنجرهٔ **Manage Phrases** چپ‌به‌راست است. کنترل‌های پنجره در VBA حالت راست‌به‌چپ ندارند، بنابراین متن فارسی درست نمایش داده می‌شود اما هنگام ویرایش، نشانگر از چپ به راست حرکت می‌کند. این فقط روی خودِ ویرایشگر اثر دارد؛ سند شما دقیقاً همان کاراکترهایی را می‌گیرد که ذخیره کرده‌اید.
+
+**روی کامپیوتر محل کارم کار می‌کند؟**
+معمولاً بله. به دسترسی ادمین نیاز ندارد و کاملاً داخل پروفایل کاربری نصب می‌شود. استثنا زمانی است که سیاست سازمانی (Group Policy) اجرای ماکروهای خارج از شبکه را مسدود کرده باشد؛ در آن صورت هیچ تنظیم محلی کارساز نیست و باید از مدیر سیستم بخواهید فایل را مجاز کند.
+
+## ساخت از روی کد منبع
+
+مخزن فقط شامل کد منبع است. فایل `QuickPhrase.dotm` خروجی ساخت است و به هر [Release](https://github.com/cenaav/QuickPhrase/releases) پیوست می‌شود.
+
+**ساخت روی هر سیستم‌عاملی و بدون نصب Word ممکن است:**
+
+```bash
+python3 build/check_sources.py
+python3 build/pack.py pack
+python3 build/pack.py verify
+```
+
+دلیلش این است که فایل `.dotm` به شکل **باز شده به اجزای XML** در پوشهٔ [`package/`](package/) نگهداری می‌شود — همه متنی و قابل مقایسه — به‌علاوهٔ یک فایل باینری، `package/word/vbaProject.bin`، که پروژهٔ کامپایل‌شدهٔ VBA است.
+
+آن یک فایل، تنها چیزی است که فقط خودِ Word می‌تواند بسازد. **اگر چیزی زیر پوشهٔ `src/` را تغییر دادید، باید دوباره ساخته شود** — روی ویندوز و با Word نصب‌شده:
+
+```
+build-and-push.cmd
+```
+
+روی آن دوبار کلیک کنید. این اسکریپت آخرین تغییرات را می‌گیرد، با Word دوباره می‌سازد، تنظیم Trust Center را به حالت اول برمی‌گرداند، و فقط همان فایل باینری را commit و push می‌کند. سایر فایل‌هایی که تغییر داده‌اید فقط فهرست می‌شوند و دست‌نخورده می‌مانند.
+
+پیش از اولین ساخت، Word باید اجازهٔ دسترسی به پروژهٔ VBA را بدهد. اسکریپت این کار را خودش انجام می‌دهد و بعد هم برمی‌گرداند؛ اگر خواستید دستی انجام دهید:
+`Word ← File ← Options ← Trust Center ← Trust Center Settings ← Macro Settings ← Trust access to the VBA project object model`
+
+## مجوز
+
+[MIT](LICENSE) — رایگان برای استفادهٔ شخصی **و تجاری**. می‌توانید تغییرش دهید، منتشر کنید و حتی بفروشید. تنها شرط این است که متن کپی‌رایت و مجوز را نگه دارید و ذکر کنید از کجا کپی شده است.
+
+</div>
+
+---
 
 <div align="center">
 
 **Found this useful? A ⭐ helps other people find it.**
+
+**اگر مفید بود، یک ⭐ به دیده‌شدنش کمک می‌کند.**
 
 </div>
 
@@ -409,5 +625,5 @@ Word automation, dotm template, global template, Word 2007, Word 2010, Word
 2013, Word 2016, Word 2019, Word 2021, Word 2024, Microsoft 365, Persian Word
 add-in, Farsi text insertion, Arabic Word add-in, RTL support, right-to-left,
 UTF-8, free open source Word add-in, MIT licensed, افزونه ورد, افزونه وُرد فارسی,
-درج متن سریع, عبارات پرکاربرد, ماکرو ورد, قالب ورد
+درج متن سریع, عبارات پرکاربرد, ماکرو ورد, قالب ورد, تایپ سریع فارسی
 -->

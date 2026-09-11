@@ -220,6 +220,34 @@ def check_module_list() -> None:
         check(f"{module} has Option Explicit", "Option Explicit" in src)
 
 
+def check_seed_defaults() -> None:
+    """A fresh install must start with exactly two phrases: Hello and سلام.
+
+    They are written with ChrW escapes so the .bas file stays pure ASCII and
+    cannot be corrupted by an editor saving in the wrong encoding - which also
+    means a typo there is invisible on inspection. Hence this check.
+    """
+    section("Starter phrases are exactly Hello and سلام")
+
+    src = read(REPO_ROOT / "src" / "modules" / "SnippetStore.bas")
+    match = re.search(r"Private Sub SeedDefaults\(\)(.*?)End Sub", src, re.DOTALL)
+    if not match:
+        check("SeedDefaults exists", False, "not found in SnippetStore.bas")
+        return
+
+    body = match.group(1)
+    calls = re.findall(r"^\s*AddPhrase\b", body, re.MULTILINE)
+    check("exactly 2 starter phrases", len(calls) == 2, f"found {len(calls)}")
+
+    check('"Hello" is one of them', 'AddPhrase "Hello", "Hello"' in body)
+
+    # سلام = U+0633 U+0644 U+0627 U+0645
+    salam = ["&H633", "&H644", "&H627", "&H645"]
+    chrw = re.findall(r"ChrW\$\((&H[0-9A-Fa-f]+)\)", body)
+    check("the Persian phrase is سلام", chrw == salam,
+          f"ChrW codes found: {chrw}, expected {salam}")
+
+
 def check_version_consistency() -> None:
     section("Version string is present and well-formed")
 
@@ -240,6 +268,7 @@ def main() -> int:
     check_ribbon_callbacks()
     check_form_controls()
     check_module_list()
+    check_seed_defaults()
     check_version_consistency()
 
     print(f"\n{checks_run} checks, {len(failures)} failed")
