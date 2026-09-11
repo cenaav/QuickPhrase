@@ -31,6 +31,19 @@ Public Sub RefreshRibbon()
     If Not mRibbon Is Nothing Then mRibbon.Invalidate
 End Sub
 
+'--- Placement -----------------------------------------------------------------
+
+' The ribbon cannot be rebuilt at run time, so both placements are declared in
+' the XML and these decide which is shown. Invalidate makes a change take effect
+' without restarting Word.
+Public Sub GetOwnTabVisible(control As IRibbonControl, ByRef returnedVal)
+    returnedVal = (SnippetStore.Location <> qpLocationHomeTab)
+End Sub
+
+Public Sub GetHomeGroupVisible(control As IRibbonControl, ByRef returnedVal)
+    returnedVal = (SnippetStore.Location <> qpLocationOwnTab)
+End Sub
+
 '--- Favorites buttons ---------------------------------------------------------
 
 Public Sub GetFavLabel(control As IRibbonControl, ByRef returnedVal)
@@ -79,20 +92,25 @@ Public Sub GetMenuContent(control As IRibbonControl, ByRef returnedVal)
     count = SnippetStore.PhraseCount
     sb = "<menu xmlns=""" & ns & """ itemSize=""normal"">"
 
+    ' Two menus exist when the Home group is shown, and ids must not collide, so
+    ' each generated control is namespaced by the menu that asked for it.
+    Dim prefix As String
+    prefix = control.id
+
     If count = 0 Then
-        sb = sb & "<button id=""qpDynEmpty"" label=""(no phrases yet - use Manage Phrases)"" " & _
-                  "enabled=""false"" />"
+        sb = sb & "<button id=""" & prefix & "Empty"" " & _
+                  "label=""(no phrases yet - use Manage Phrases)"" enabled=""false"" />"
     Else
         For i = 0 To count - 1
-            sb = sb & "<button id=""qpDyn" & i & """" & _
+            sb = sb & "<button id=""" & prefix & "Dyn" & i & """" & _
                       " label=""" & XmlAttr(MenuLabel(i)) & """" & _
                       " tag=""" & i & """" & _
                       " onAction=""OnPhraseClick"" />"
         Next i
     End If
 
-    sb = sb & "<menuSeparator id=""qpDynSep"" />"
-    sb = sb & "<button id=""qpDynManage"" label=""Manage Phrases..."" " & _
+    sb = sb & "<menuSeparator id=""" & prefix & "Sep"" />"
+    sb = sb & "<button id=""" & prefix & "Manage"" label=""Manage Phrases..."" " & _
               "imageMso=""ControlProperties"" onAction=""OnManage"" />"
     sb = sb & "</menu>"
 
@@ -151,15 +169,24 @@ End Sub
 
 '--- Helpers -------------------------------------------------------------------
 
-' "qpBtn07" -> 6. Returns -1 for anything unexpected.
+' "qpBtn07" and "qpHomeBtn07" both mean phrase 7, which is index 6. The two
+' placements need distinct control ids, but they share every callback, so the
+' prefix is stripped here rather than duplicating the handlers.
+' Returns -1 for anything unexpected.
 Private Function IndexFromButtonId(ByVal controlId As String) As Long
     Dim suffix As String
 
     IndexFromButtonId = -1
-    If Len(controlId) < 6 Then Exit Function
-    If Left$(controlId, 5) <> "qpBtn" Then Exit Function
 
-    suffix = Mid$(controlId, 6)
+    If Left$(controlId, 9) = "qpHomeBtn" Then
+        suffix = Mid$(controlId, 10)
+    ElseIf Left$(controlId, 5) = "qpBtn" Then
+        suffix = Mid$(controlId, 6)
+    Else
+        Exit Function
+    End If
+
+    If Len(suffix) = 0 Then Exit Function
     If Not IsNumeric(suffix) Then Exit Function
 
     IndexFromButtonId = CLng(suffix) - 1

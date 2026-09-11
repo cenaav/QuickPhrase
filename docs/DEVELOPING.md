@@ -166,8 +166,20 @@ ways at once:
   click time, so it has no limit — at the cost of one extra click.
 
 To change the favourites count, edit `FAV_COUNT` in `QuickPhraseRibbon.bas`
-**and** the button list in both customUI files. `check_sources.py` fails if they
-disagree.
+**and** the button list in both customUI files — in **both placements**, so four
+pools in total. `check_sources.py` fails if any disagree.
+
+**The same phrases appear in two places.** A second copy of the buttons is
+declared inside Word's built-in `TabHome`, with ids prefixed `qpHomeBtn`, and
+`SnippetStore.Location` decides which placement `getVisible` reveals. Both are
+always present in the XML; only visibility changes, because the ribbon cannot be
+rebuilt at run time. `IndexFromButtonId` strips either prefix so every callback
+is shared rather than duplicated.
+
+Because two `dynamicMenu` controls can now exist at once, `GetMenuContent`
+namespaces the controls it generates with the id of the menu that asked for
+them. Without that the two menus emit colliding ids and Word shows one of them
+empty.
 
 `GetMenuContent` picks its namespace from `Application.Version`: Word 2007 wants
 the 2006 namespace, 2010+ the 2009 one. A mismatch produces an empty menu with

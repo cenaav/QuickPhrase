@@ -134,17 +134,22 @@ def check_favourite_count() -> None:
         return
 
     fav = int(match.group(1))
-    n14 = len(re.findall(r'id="qpBtn\d+"', read(CUSTOMUI_14)))
-    n07 = len(re.findall(r'id="qpBtn\d+"', read(CUSTOMUI_07)))
 
-    check(f"customUI14.xml has {fav} qpBtn buttons", n14 == fav, f"found {n14}")
-    check(f"customUI.xml has {fav} qpBtn buttons", n07 == fav, f"found {n07}")
+    # Two placements exist - the dedicated tab and the group mirrored into Home -
+    # and both pools must match FAV_COUNT or one of them silently loses buttons.
+    for path in (CUSTOMUI_14, CUSTOMUI_07):
+        src = read(path)
+        for prefix in ("qpBtn", "qpHomeBtn"):
+            found = len(re.findall(rf'id="{prefix}\d+"', src))
+            check(f"{path.name} has {fav} {prefix} buttons", found == fav,
+                  f"found {found}")
 
     # Buttons are numbered from 1, and IndexFromButtonId subtracts 1, so any gap
     # would leave a dead button.
-    ids14 = sorted(int(n) for n in re.findall(r'id="qpBtn(\d+)"', read(CUSTOMUI_14)))
-    check("qpBtn ids are 1..N with no gaps", ids14 == list(range(1, fav + 1)),
-          f"got {ids14}")
+    for prefix in ("qpBtn", "qpHomeBtn"):
+        ids = sorted(int(n) for n in re.findall(rf'id="{prefix}(\d+)"', read(CUSTOMUI_14)))
+        check(f"{prefix} ids are 1..N with no gaps", ids == list(range(1, fav + 1)),
+              f"got {ids}")
 
 
 def check_ribbon_callbacks() -> None:

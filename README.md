@@ -57,6 +57,36 @@ Installing adds a **QuickPhrase** tab next to Home:
 
 Type in your document. Click a button. The text lands exactly where the cursor is, as a single undo step.
 
+## Screenshots
+
+> **Screenshots pending.** Add the files listed in
+> [`docs/images/README.md`](docs/images/README.md), then delete the two comment
+> markers below and the images appear — the markdown is already written.
+
+<!-- SCREENSHOTS: delete this line and the closing marker once the files exist
+
+### The QuickPhrase tab
+
+![The QuickPhrase ribbon tab, with phrases as buttons](docs/images/ribbon-tab.png)
+
+### Inserting a phrase
+
+![Clicking a phrase button inserts the text at the cursor](docs/images/insert-demo.gif)
+
+### Managing your phrases
+
+![The Manage Phrases dialog](docs/images/manage-dialog.png)
+
+### Inside the Home tab
+
+![The QuickPhrase group shown inside Word's Home tab](docs/images/home-tab.png)
+
+### The full list
+
+![The All Phrases dropdown](docs/images/all-phrases-menu.png)
+
+end SCREENSHOTS -->
+
 ## Features
 
 |  | Feature | Detail |
@@ -70,6 +100,7 @@ Type in your document. Click a button. The text lands exactly where the cursor i
 | ↵ | **Optional line break** | Flag a phrase to end the paragraph after inserting, for sign-offs and list items. |
 | 🌍 | **Persian, Arabic, Hebrew, emoji** | UTF-8 throughout, and insertion via Word's own typing engine, so RTL text keeps its direction. |
 | ↕️ | **Reorderable** | Up/Down decides which phrases earn a ribbon button. |
+| 🏠 | **Put it in the Home tab** | Keep the dedicated tab, move the buttons into Home, or show both — no tab switching while you type. |
 | 💾 | **One plain JSON file** | Human-readable, hand-editable, easy to back up or put in a synced folder. |
 | 📤 | **Import / export** | Share a phrase set with colleagues. Import replaces or appends, your choice. |
 | 🚫 | **No background process** | It is a Word template. Nothing runs when Word is closed. |
@@ -124,6 +155,7 @@ Phrases past the first twelve live in the **All Phrases** dropdown, which has no
 | **Text inserted at the cursor** | What actually goes into your document — multiple lines allowed |
 | **Start a new line after inserting** | Ends the paragraph after this phrase |
 | **Add a space** | Where the automatic space goes — applies to every phrase |
+| **Show buttons on** | Own QuickPhrase tab, inside the Home tab, or both |
 | **New / Delete** | Add or remove a phrase |
 | **Up / Down** | Reorder — the first 12 become ribbon buttons |
 | **Save & Close / Cancel** | Commit or discard everything |
@@ -152,6 +184,32 @@ table cell boundary next to the cursor, so you never get a double space.
 **Start a new line after inserting this phrase** is a per-phrase tick box. Use
 it for sign-offs and list items, where the next thing you type should begin on
 a fresh line.
+
+### Where the buttons appear
+
+Switching tabs to reach a phrase defeats the point, so the buttons can live in
+Word's **Home** tab instead — right next to the formatting tools you are already
+using.
+
+In *Manage Phrases*, set **Show buttons on**:
+
+| Choice | Result |
+|---|---|
+| **Its own QuickPhrase tab** *(default)* | A dedicated tab, next to Home |
+| **Inside the Home tab** | A **QuickPhrase** group at the right-hand end of Home. The dedicated tab disappears. |
+| **Both** | Phrases in both places |
+
+The Home group carries the phrase buttons and the **All Phrases** list. The
+admin buttons — Manage, Import, Export, Reload — stay on the dedicated tab so
+Home does not fill up. If you pick **Inside the Home tab**, reach the manager
+from the bottom of the **All Phrases** dropdown.
+
+The change applies immediately; Word does not need restarting.
+
+> **Tip:** you can also right-click any QuickPhrase button and choose
+> **Add to Quick Access Toolbar** to pin that one phrase above the ribbon, where
+> it is visible on every tab. That is a built-in Word feature and works
+> regardless of this setting.
 
 ### Sharing a phrase set
 
@@ -476,6 +534,7 @@ crediting where it came from.
 | **Text inserted at the cursor** | متنی که واقعاً در سند درج می‌شود — چند خطی هم می‌تواند باشد |
 | **Start a new line after inserting** | بعد از این عبارت، پاراگراف را تمام می‌کند و به خط بعد می‌رود |
 | **Add a space** | محل قرارگرفتن فاصلهٔ خودکار — روی همهٔ عبارت‌ها اعمال می‌شود |
+| **Show buttons on** | تب اختصاصی QuickPhrase، داخل تب Home، یا هر دو |
 | **New / Delete** | افزودن یا حذف عبارت |
 | **Up / Down** | تغییر ترتیب — دوازده مورد اول به دکمهٔ نوار ابزار تبدیل می‌شوند |
 | **Save & Close / Cancel** | ذخیره یا لغو همهٔ تغییرات |
@@ -499,6 +558,24 @@ crediting where it came from.
 اگر کنار نشانگر از قبل فاصله، علامت پایان پاراگراف یا مرز خانهٔ جدول باشد، فاصلهٔ اضافه درج نمی‌شود — پس هرگز دو فاصلهٔ پشت‌سرهم نمی‌گیرید.
 
 گزینهٔ **Start a new line after inserting this phrase** برای هر عبارت جداگانه تنظیم می‌شود. برای امضاها و آیتم‌های فهرست مناسب است؛ جایی که می‌خواهید ادامهٔ تایپ از خط بعد شروع شود.
+
+### محل قرارگرفتن دکمه‌ها
+
+اگر برای رسیدن به یک عبارت مجبور باشید تب عوض کنید، هدف اصلی از بین می‌رود. برای همین دکمه‌ها می‌توانند داخل تب **Home** خود Word قرار بگیرند — درست کنار ابزارهای قالب‌بندی که همان لحظه با آن‌ها کار می‌کنید.
+
+در پنجرهٔ *Manage Phrases* گزینهٔ **Show buttons on** را تنظیم کنید:
+
+| گزینه | نتیجه |
+|---|---|
+| **Its own QuickPhrase tab** *(پیش‌فرض)* | یک تب اختصاصی، کنار Home |
+| **Inside the Home tab** | یک گروه به نام **QuickPhrase** در انتهای سمت راست تب Home. تب اختصاصی پنهان می‌شود. |
+| **Both** | عبارت‌ها در هر دو جا |
+
+گروهِ داخل Home فقط دکمه‌های عبارت و فهرست **All Phrases** را دارد. دکمه‌های مدیریتی — Manage، Import، Export، Reload — روی تب اختصاصی می‌مانند تا تب Home شلوغ نشود. اگر گزینهٔ **Inside the Home tab** را انتخاب کردید، به پنجرهٔ مدیریت از انتهای منوی کشویی **All Phrases** دسترسی دارید.
+
+تغییر بلافاصله اعمال می‌شود و نیازی به بستن و باز کردن Word نیست.
+
+> **نکته:** می‌توانید روی هر دکمهٔ QuickPhrase راست‌کلیک کنید و گزینهٔ **Add to Quick Access Toolbar** را بزنید تا آن عبارت بالای نوار ابزار سنجاق شود و در همهٔ تب‌ها دیده شود. این یک قابلیت خود Word است و مستقل از این تنظیم کار می‌کند.
 
 ### اشتراک‌گذاری مجموعهٔ عبارت‌ها
 

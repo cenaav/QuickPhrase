@@ -2,21 +2,23 @@
 <customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="OnRibbonLoad">
   <ribbon>
     <tabs>
-      <tab id="qpTab" label="QuickPhrase" insertAfterMso="TabHome">
+
+      <!-- The dedicated tab. Hidden when the user chooses Home-only placement. -->
+      <tab id="qpTab" label="QuickPhrase" insertAfterMso="TabHome" getVisible="GetOwnTabVisible">
 
         <group id="qpGroupFav" label="Favorites">
-        <button id="qpBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
-        <button id="qpBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
         </group>
 
         <group id="qpGroupAll" label="All Phrases">
@@ -47,6 +49,37 @@
         </group>
 
       </tab>
+
+      <!--
+        The same phrases mirrored into Word's built-in Home tab, so they can be
+        reached without switching tabs. Hidden by default; the Manage dialog
+        turns it on. Only the phrase buttons and the full list are duplicated -
+        the admin buttons stay on the dedicated tab to keep Home usable.
+      -->
+      <tab idMso="TabHome">
+        <group id="qpHomeGroup" label="QuickPhrase"
+               getVisible="GetHomeGroupVisible" insertAfterMso="GroupEditing">
+          <button id="qpHomeBtn01" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn02" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn03" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn04" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn05" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn06" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn07" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn08" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn09" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn10" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn11" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <button id="qpHomeBtn12" getLabel="GetFavLabel" getVisible="GetFavVisible" getScreentip="GetFavScreentip" onAction="OnPhraseClick" size="normal" />
+          <dynamicMenu id="qpHomeMenuAll"
+                       label="All Phrases"
+                       screentip="Every saved phrase"
+                       imageMso="ListMacros"
+                       size="large"
+                       getContent="GetMenuContent" />
+        </group>
+      </tab>
+
     </tabs>
   </ribbon>
 </customUI>

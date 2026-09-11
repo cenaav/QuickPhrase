@@ -15,6 +15,13 @@ Private Const STORE_FILE As String = "snippets.json"
 
 ' Where a space is added around an inserted phrase, so clicking two buttons in a
 ' row does not run the words together.
+' Where the phrase buttons appear on the ribbon.
+Public Enum QpLocation
+    qpLocationOwnTab = 0
+    qpLocationHomeTab = 1
+    qpLocationBoth = 2
+End Enum
+
 Public Enum QpSpaceMode
     qpSpaceNone = 0
     qpSpaceBefore = 1
@@ -72,6 +79,35 @@ Public Property Let SpaceMode(ByVal value As QpSpaceMode)
 
     On Error Resume Next
     SaveSetting SETTINGS_APP, SETTINGS_SECTION, "SpaceMode", raw
+End Property
+
+' Defaults to the dedicated tab: adding a group to Home without being asked
+' would rearrange a toolbar the user did not choose to change.
+Public Property Get Location() As QpLocation
+    Dim raw As String
+
+    On Error Resume Next
+    raw = GetSetting(SETTINGS_APP, SETTINGS_SECTION, "Location", "")
+    On Error GoTo 0
+
+    Select Case LCase$(Trim$(raw))
+        Case "home": Location = qpLocationHomeTab
+        Case "both": Location = qpLocationBoth
+        Case Else:   Location = qpLocationOwnTab
+    End Select
+End Property
+
+Public Property Let Location(ByVal value As QpLocation)
+    Dim raw As String
+
+    Select Case value
+        Case qpLocationHomeTab: raw = "home"
+        Case qpLocationBoth:    raw = "both"
+        Case Else:              raw = "tab"
+    End Select
+
+    On Error Resume Next
+    SaveSetting SETTINGS_APP, SETTINGS_SECTION, "Location", raw
 End Property
 
 '--- Accessors -----------------------------------------------------------------

@@ -22,6 +22,8 @@ All notable changes to QuickPhrase are recorded here. Format follows
   before, and is suppressed where whitespace or a paragraph mark already sits.
 - Per-phrase "start a new line after inserting" flag, stored as `newline` in
   `snippets.json`.
+- Ribbon placement setting: the phrase buttons can live on their own tab, inside
+  Word's built-in Home tab, or both. Applies immediately, no restart.
 - Import and export, with a choice of replacing or appending on import.
 - Reload button, to pick up edits made to the phrase file outside Word.
 - Insertion grouped into a single undo step on Word 2010 and later.

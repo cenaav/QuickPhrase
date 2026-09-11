@@ -36,6 +36,17 @@ Private Sub UserForm_Initialize()
         Case qpSpaceNone:  cboSpacing.ListIndex = 2
         Case Else:         cboSpacing.ListIndex = 0
     End Select
+
+    cboLocation.Clear
+    cboLocation.AddItem "Its own QuickPhrase tab"
+    cboLocation.AddItem "Inside the Home tab"
+    cboLocation.AddItem "Both"
+
+    Select Case SnippetStore.Location
+        Case qpLocationHomeTab: cboLocation.ListIndex = 1
+        Case qpLocationBoth:    cboLocation.ListIndex = 2
+        Case Else:              cboLocation.ListIndex = 0
+    End Select
     mSuspendEvents = False
 
     SnippetStore.EnsureLoaded
@@ -183,6 +194,7 @@ End Sub
 Private Sub btnSave_Click()
     CommitEditors
     SaveSpacingChoice
+    SaveLocationChoice
 
     If Not SnippetStore.SaveToDisk() Then Exit Sub
 
@@ -205,6 +217,16 @@ Private Sub SaveSpacingChoice()
         Case 1: SnippetStore.SpaceMode = qpSpaceAfter
         Case 2: SnippetStore.SpaceMode = qpSpaceNone
         Case Else: SnippetStore.SpaceMode = qpSpaceBefore
+    End Select
+End Sub
+
+' Which ribbon tab carries the phrase buttons. Both placements are always in the
+' ribbon XML; this only decides which one is visible.
+Private Sub SaveLocationChoice()
+    Select Case cboLocation.ListIndex
+        Case 1: SnippetStore.Location = qpLocationHomeTab
+        Case 2: SnippetStore.Location = qpLocationBoth
+        Case Else: SnippetStore.Location = qpLocationOwnTab
     End Select
 End Sub
 
