@@ -43,49 +43,39 @@ Each one puts a lookup between you and the text. QuickPhrase removes it: your ph
 
 Installing adds a **QuickPhrase** tab next to Home:
 
-```
-┌─ Home ─┬─ QuickPhrase ─┬─ Insert ─┬─ Design ─┬─ Layout ─────────────────────┐
-│                                                                            │
-│  ┌── Favorites ────────────────┐  ┌─ All Phrases ─┐  ┌── Manage ─────────┐  │
-│  │  سلام        Best regards   │  │               │  │                   │  │
-│  │  کجایی؟      Kind regards   │  │      ▼        │  │  Manage Phrases…  │  │
-│  │  خوبی؟       Please find…   │  │  All Phrases  │  │  Import   Export  │  │
-│  │  دوستت دارم  Signature      │  │               │  │  Reload   About   │  │
-│  └─────────────────────────────┘  └───────────────┘  └───────────────────┘  │
-└────────────────────────────────────────────────────────────────────────────┘
-```
+![The QuickPhrase ribbon tab: phrases as buttons in a Favorites group, an All Phrases dropdown, and Manage, Import, Export and Reload buttons](docs/images/ribbon-tab.png)
 
 Type in your document. Click a button. The text lands exactly where the cursor is, as a single undo step.
 
 ## Screenshots
 
-> **Screenshots pending.** Add the files listed in
-> [`docs/images/README.md`](docs/images/README.md), then delete the two comment
-> markers below and the images appear — the markdown is already written.
-
-<!-- SCREENSHOTS: delete this line and the closing marker once the files exist
-
-### The QuickPhrase tab
-
-![The QuickPhrase ribbon tab, with phrases as buttons](docs/images/ribbon-tab.png)
-
 ### Inserting a phrase
 
-![Clicking a phrase button inserts the text at the cursor](docs/images/insert-demo.gif)
+Put the cursor where the text belongs and click. The phrase is inserted at the
+cursor, spaced correctly, as a single undo step.
+
+![Clicking a QuickPhrase button in Word inserts the phrase at the cursor](docs/images/insert-demo.gif)
 
 ### Managing your phrases
 
-![The Manage Phrases dialog](docs/images/manage-dialog.png)
+Add, edit, reorder and delete. The label on the button and the text it inserts
+are separate fields, and each phrase can end the line after inserting.
 
-### Inside the Home tab
-
-![The QuickPhrase group shown inside Word's Home tab](docs/images/home-tab.png)
+![The Manage Phrases dialog, showing the phrase list, the label and text fields, and the line-break, spacing and placement settings](docs/images/manage-dialog.png)
 
 ### The full list
 
-![The All Phrases dropdown](docs/images/all-phrases-menu.png)
+Phrases past the first twelve live in the **All Phrases** dropdown, which has no
+limit. The manager is reachable from the bottom of it.
 
-end SCREENSHOTS -->
+![The All Phrases dropdown open, listing every saved phrase](docs/images/all-phrases-menu.png)
+
+### Inside the Home tab
+
+Prefer not to switch tabs? The phrase buttons can sit in Word's own **Home** tab
+instead, or in both places.
+
+![The QuickPhrase group shown inside Word's Home tab, beside the Styles and Editing groups](docs/images/home-tab.png)
 
 ## Features
 
@@ -490,6 +480,28 @@ crediting where it came from.
 - **نرم‌افزارهای text expander** پردازش پس‌زمینه، حساب کاربری یا اشتراک می‌خواهند.
 
 همه‌شان یک مرحلهٔ «به‌یادآوردن» بین شما و متن می‌گذارند. QuickPhrase این مرحله را حذف می‌کند: عبارت‌های شما **دیده می‌شوند** — به شکل دکمه‌هایی با برچسب، روی نوار ابزار.
+
+## تصویرها
+
+نوار ابزار QuickPhrase پس از نصب:
+
+![تب QuickPhrase در نوار ابزار Word](docs/images/ribbon-tab.png)
+
+درج یک عبارت با یک کلیک، دقیقاً در محل نشانگر:
+
+![درج عبارت با کلیک روی دکمه](docs/images/insert-demo.gif)
+
+پنجرهٔ مدیریت عبارت‌ها — افزودن، ویرایش، جابه‌جایی و حذف:
+
+![پنجرهٔ Manage Phrases](docs/images/manage-dialog.png)
+
+منوی **All Phrases** که همهٔ عبارت‌ها را بدون محدودیت تعداد نگه می‌دارد:
+
+![منوی کشویی All Phrases](docs/images/all-phrases-menu.png)
+
+همان دکمه‌ها داخل تب **Home** خود Word، برای دسترسی بدون عوض‌کردن تب:
+
+![گروه QuickPhrase داخل تب Home](docs/images/home-tab.png)
 
 ## نصب
 

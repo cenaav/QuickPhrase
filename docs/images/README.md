@@ -1,10 +1,9 @@
 # Screenshots
 
-Drop the files here using **exactly these names**, then uncomment the
-`Screenshots` block in the root `README.md` — the markdown is already written
-and pointing at these paths.
+Screenshots used by the root `README.md`. All five are in place; this file
+records what each one is meant to show, so a replacement stays consistent.
 
-| Filename | What it should show | Notes |
+| Filename | Shows | Notes |
 |---|---|---|
 | `ribbon-tab.png` | The **QuickPhrase** tab open, with phrase buttons visible | The headline image. Crop to the ribbon only — no desktop, no taskbar. |
 | `insert-demo.gif` | Cursor in a document, a click on a phrase button, text appearing | The single most convincing asset. 5–10 seconds, loop it. |

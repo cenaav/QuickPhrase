@@ -44,6 +44,9 @@ All notable changes to QuickPhrase are recorded here. Format follows
 - Persian and English starter phrase packs in `examples/`.
 
 ### Documentation
+- Screenshots of the ribbon tab, insertion, the manager dialog, the All Phrases
+  menu and the Home tab placement, in both the English and Persian sections. The
+  ASCII mock-up of the ribbon is replaced by the real thing.
 - README rewritten with complete English and Persian sections covering install,
   usage, spacing and line-break settings, the phrase file format, compatibility
   and troubleshooting.
