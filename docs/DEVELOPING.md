@@ -38,6 +38,7 @@ src/
     customUI.xml           Same tab, Word 2007 namespace
   modules/
     JsonLite.bas           Minimal JSON reader/writer
+    UnicodeUI.bas          MessageBoxW wrapper, for non-Latin text in dialogs
     SnippetStore.bas       Phrase list + UTF-8 file I/O
     QuickPhraseRibbon.bas  Ribbon callbacks
     QuickPhraseMain.bas    Insert, manager, import/export, about
@@ -182,6 +183,14 @@ a BOM in text mode, so `SnippetStore.WriteUtf8` stages the text, flips the strea
 to binary, seeks past the three BOM bytes and copies into a second stream.
 Skipping it leaves a BOM that surfaces as `ï»¿` in other editors. Also note
 `Type` may only be changed while `Position` is 0.
+
+**`MsgBox` cannot display Persian.** VBA's built-in `MsgBox` converts its text
+through the system ANSI codepage, so anything outside it becomes a question
+mark — `Delete "سلام"?` renders as `Delete "??????"`. `UnicodeUI.MsgBoxW` calls
+the Windows `MessageBoxW` API with UTF-16 pointers instead. **Use it for any
+message that can contain text the user typed.** The same trap applies to
+`InputBox` and to a control's `Caption`, which is why phrase text is edited in a
+`TextBox` rather than shown in a label.
 
 **Line breaks change form three times.** `vbLf` in the file, `vbCrLf` in the
 dialog's text box, `vbCr` in a Word range. Each conversion is explicit in the

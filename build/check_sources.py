@@ -29,10 +29,15 @@ PACKAGE_DIR = REPO_ROOT / "package"
 
 MODULES = [
     "JsonLite.bas",
+    "UnicodeUI.bas",
     "SnippetStore.bas",
     "QuickPhraseRibbon.bas",
     "QuickPhraseMain.bas",
 ]
+
+# Hungarian prefixes used for dialog controls. Any new prefix must be added
+# here, or controls using it silently escape the name check.
+CONTROL_PREFIX_RE = r"\b(?:lst|txt|btn|lbl|chk|cbo|opt|fra|img|spn)[A-Z]\w*"
 
 # Callback attributes in the ribbon XML that must name a real VBA procedure.
 CALLBACK_ATTRS = (
@@ -109,6 +114,16 @@ def check_json_valid() -> None:
         ]
         check(rel, not bad, f"entries missing string label/text: {bad}")
 
+        # "newline" is optional - older files predate it - but VBA reads it as a
+        # boolean, so a string or number there would be silently dropped.
+        bad_flag = [
+            i for i, entry in enumerate(data)
+            if isinstance(entry, dict)
+            and "newline" in entry
+            and not isinstance(entry["newline"], bool)
+        ]
+        check(f"{rel} newline flags are boolean", not bad_flag, f"entries: {bad_flag}")
+
 
 def check_favourite_count() -> None:
     section("FAV_COUNT matches the ribbon button pool in both namespaces")
@@ -172,7 +187,7 @@ def check_form_controls() -> None:
     # control named btnSave_Click.
     body = re.sub(r"Private Sub \w+_(?:Click|Change|Initialize|QueryClose)\([^)]*\)",
                   "", form_src)
-    referenced = set(re.findall(r"\b(?:lst|txt|btn|lbl)[A-Z]\w*", body))
+    referenced = set(re.findall(CONTROL_PREFIX_RE, body))
     missing = sorted(referenced - declared)
     check(f"{len(referenced)} referenced controls exist", not missing,
           f"not created by build.ps1: {missing}")

@@ -74,6 +74,7 @@ $Output = [System.IO.Path]::GetFullPath($Output)
 
 $modules = @(
     'JsonLite.bas'
+    'UnicodeUI.bas'
     'SnippetStore.bas'
     'QuickPhraseRibbon.bas'
     'QuickPhraseMain.bas'
@@ -91,22 +92,22 @@ foreach ($f in @($modules + $formCode + $customUi14 + $customUi07)) {
 # Ordered so tab order comes out sensibly. Coordinates are in points.
 
 $formWidth  = 664
-$formHeight = 430
+$formHeight = 398
 
 $controls = @(
     @{ Type='Forms.Label.1';    Name='lblList';     Left=10;  Top=8;   Width=240; Height=14
        Props=@{ Caption='Phrases' } }
 
-    @{ Type='Forms.ListBox.1';  Name='lstPhrases';  Left=10;  Top=24;  Width=240; Height=320
+    @{ Type='Forms.ListBox.1';  Name='lstPhrases';  Left=10;  Top=24;  Width=240; Height=286
        Props=@{ IntegralHeight=$false } }
 
-    @{ Type='Forms.CommandButton.1'; Name='btnNew';    Left=10;  Top=352; Width=58; Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnNew';    Left=10;  Top=320; Width=58; Height=24
        Props=@{ Caption='New' } }
-    @{ Type='Forms.CommandButton.1'; Name='btnDelete'; Left=72;  Top=352; Width=58; Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnDelete'; Left=72;  Top=320; Width=58; Height=24
        Props=@{ Caption='Delete' } }
-    @{ Type='Forms.CommandButton.1'; Name='btnUp';     Left=134; Top=352; Width=52; Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnUp';     Left=134; Top=320; Width=52; Height=24
        Props=@{ Caption='Up' } }
-    @{ Type='Forms.CommandButton.1'; Name='btnDown';   Left=190; Top=352; Width=60; Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnDown';   Left=190; Top=320; Width=60; Height=24
        Props=@{ Caption='Down' } }
 
     @{ Type='Forms.Label.1';    Name='lblLabel';    Left=264; Top=8;   Width=380; Height=14
@@ -115,15 +116,28 @@ $controls = @(
 
     @{ Type='Forms.Label.1';    Name='lblText';     Left=264; Top=52;  Width=380; Height=14
        Props=@{ Caption='Text inserted at the cursor' } }
-    @{ Type='Forms.TextBox.1';  Name='txtText';     Left=264; Top=68;  Width=380; Height=230
+
+    # Sized for a sentence or a short sign-off, which is what phrases actually
+    # are. Longer text still scrolls.
+    @{ Type='Forms.TextBox.1';  Name='txtText';     Left=264; Top=68;  Width=380; Height=150
        Props=@{ MultiLine=$true; WordWrap=$true; ScrollBars=2; EnterKeyBehavior=$true } }
 
-    @{ Type='Forms.Label.1';    Name='lblHint';     Left=264; Top=304; Width=380; Height=42
+    @{ Type='Forms.CheckBox.1'; Name='chkNewline';  Left=264; Top=226; Width=380; Height=18
+       Props=@{ Caption='Start a new line after inserting this phrase' } }
+
+    @{ Type='Forms.Label.1';    Name='lblSpacing';  Left=264; Top=252; Width=104; Height=14
+       Props=@{ Caption='Add a space:' } }
+
+    # fmStyleDropDownList (2) - pick from the list, no free typing.
+    @{ Type='Forms.ComboBox.1'; Name='cboSpacing';  Left=370; Top=249; Width=150; Height=20
+       Props=@{ Style=2 } }
+
+    @{ Type='Forms.Label.1';    Name='lblHint';     Left=264; Top=278; Width=380; Height=32
        Props=@{ Caption='' } }
 
-    @{ Type='Forms.CommandButton.1'; Name='btnSave';   Left=430; Top=352; Width=110; Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnSave';   Left=430; Top=320; Width=110; Height=24
        Props=@{ Caption='Save && Close'; Default=$true } }
-    @{ Type='Forms.CommandButton.1'; Name='btnCancel'; Left=546; Top=352; Width=98;  Height=24
+    @{ Type='Forms.CommandButton.1'; Name='btnCancel'; Left=546; Top=320; Width=98;  Height=24
        Props=@{ Caption='Cancel'; Cancel=$true } }
 )
 

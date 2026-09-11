@@ -13,8 +13,23 @@ Option Explicit
 Private Const APP_FOLDER As String = "QuickPhrase"
 Private Const STORE_FILE As String = "snippets.json"
 
+' Where a space is added around an inserted phrase, so clicking two buttons in a
+' row does not run the words together.
+Public Enum QpSpaceMode
+    qpSpaceNone = 0
+    qpSpaceBefore = 1
+    qpSpaceAfter = 2
+End Enum
+
+' The spacing preference is personal rather than part of a phrase set, so it
+' lives in the registry instead of snippets.json - exporting phrases to a
+' colleague should not change how their Word behaves.
+Private Const SETTINGS_APP As String = "QuickPhrase"
+Private Const SETTINGS_SECTION As String = "Options"
+
 Private mLabels() As String
 Private mTexts() As String
+Private mNewlines() As Boolean
 Private mCount As Long
 Private mLoaded As Boolean
 
@@ -27,6 +42,37 @@ End Function
 Public Function StorePath() As String
     StorePath = StoreFolder() & Application.PathSeparator & STORE_FILE
 End Function
+
+'--- Settings ------------------------------------------------------------------
+
+' Defaults to qpSpaceBefore: a leading space is what keeps a clicked phrase from
+' sticking to the word already typed, which is the common case.
+Public Property Get SpaceMode() As QpSpaceMode
+    Dim raw As String
+
+    On Error Resume Next
+    raw = GetSetting(SETTINGS_APP, SETTINGS_SECTION, "SpaceMode", "")
+    On Error GoTo 0
+
+    Select Case LCase$(Trim$(raw))
+        Case "none":  SpaceMode = qpSpaceNone
+        Case "after": SpaceMode = qpSpaceAfter
+        Case Else:    SpaceMode = qpSpaceBefore
+    End Select
+End Property
+
+Public Property Let SpaceMode(ByVal value As QpSpaceMode)
+    Dim raw As String
+
+    Select Case value
+        Case qpSpaceNone:  raw = "none"
+        Case qpSpaceAfter: raw = "after"
+        Case Else:         raw = "before"
+    End Select
+
+    On Error Resume Next
+    SaveSetting SETTINGS_APP, SETTINGS_SECTION, "SpaceMode", raw
+End Property
 
 '--- Accessors -----------------------------------------------------------------
 
@@ -48,22 +94,34 @@ Public Function PhraseText(ByVal index As Long) As String
     PhraseText = mTexts(index)
 End Function
 
+' True when inserting this phrase should also end the paragraph.
+Public Function PhraseNewline(ByVal index As Long) As Boolean
+    EnsureLoaded
+    If index < 0 Or index >= mCount Then Exit Function
+    PhraseNewline = mNewlines(index)
+End Function
+
 '--- Mutations -----------------------------------------------------------------
 ' None of these write to disk; call SaveToDisk when the user commits.
 
-Public Sub AddPhrase(ByVal label As String, ByVal text As String)
+Public Sub AddPhrase(ByVal label As String, ByVal text As String, _
+                     Optional ByVal newline As Boolean = False)
     EnsureLoaded
     Grow mCount + 1
     mLabels(mCount) = label
     mTexts(mCount) = text
+    mNewlines(mCount) = newline
     mCount = mCount + 1
 End Sub
 
-Public Sub UpdatePhrase(ByVal index As Long, ByVal label As String, ByVal text As String)
+Public Sub UpdatePhrase(ByVal index As Long, ByVal label As String, _
+                        ByVal text As String, _
+                        Optional ByVal newline As Boolean = False)
     EnsureLoaded
     If index < 0 Or index >= mCount Then Exit Sub
     mLabels(index) = label
     mTexts(index) = text
+    mNewlines(index) = newline
 End Sub
 
 Public Sub DeletePhrase(ByVal index As Long)
@@ -74,6 +132,7 @@ Public Sub DeletePhrase(ByVal index As Long)
     For i = index To mCount - 2
         mLabels(i) = mLabels(i + 1)
         mTexts(i) = mTexts(i + 1)
+        mNewlines(i) = mNewlines(i + 1)
     Next i
     mCount = mCount - 1
 End Sub
@@ -89,10 +148,10 @@ Public Function MovePhrase(ByVal index As Long, ByVal delta As Long) As Long
     If index < 0 Or index >= mCount Then Exit Function
     If target < 0 Or target >= mCount Then Exit Function
 
-    Dim tmpLabel As String, tmpText As String
-    tmpLabel = mLabels(index): tmpText = mTexts(index)
-    mLabels(index) = mLabels(target): mTexts(index) = mTexts(target)
-    mLabels(target) = tmpLabel: mTexts(target) = tmpText
+    Dim tmpLabel As String, tmpText As String, tmpNewline As Boolean
+    tmpLabel = mLabels(index): tmpText = mTexts(index): tmpNewline = mNewlines(index)
+    mLabels(index) = mLabels(target): mTexts(index) = mTexts(target): mNewlines(index) = mNewlines(target)
+    mLabels(target) = tmpLabel: mTexts(target) = tmpText: mNewlines(target) = tmpNewline
 
     MovePhrase = target
 End Function
@@ -124,9 +183,9 @@ Public Sub LoadFromDisk()
     json = ReadUtf8(StorePath())
 
     Dim errMsg As String
-    If Not JsonLite.ParsePhrases(json, mLabels, mTexts, mCount, errMsg) Then
+    If Not JsonLite.ParsePhrases(json, mLabels, mTexts, mNewlines, mCount, errMsg) Then
         mCount = 0
-        MsgBox "QuickPhrase could not read your phrase file:" & vbCrLf & vbCrLf & _
+        UnicodeUI.MsgBoxW "QuickPhrase could not read your phrase file:" & vbCrLf & vbCrLf & _
                StorePath() & vbCrLf & vbCrLf & errMsg & vbCrLf & vbCrLf & _
                "The file was left untouched. Fix it, or use Manage Phrases " & _
                "to start a new list.", vbExclamation, "QuickPhrase"
@@ -137,12 +196,12 @@ Public Function SaveToDisk() As Boolean
     On Error GoTo Fail
 
     EnsureFolder StoreFolder()
-    WriteUtf8 StorePath(), JsonLite.SerializePhrases(mLabels, mTexts, mCount)
+    WriteUtf8 StorePath(), JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mCount)
     SaveToDisk = True
     Exit Function
 
 Fail:
-    MsgBox "QuickPhrase could not save your phrases to:" & vbCrLf & vbCrLf & _
+    UnicodeUI.MsgBoxW "QuickPhrase could not save your phrases to:" & vbCrLf & vbCrLf & _
            StorePath() & vbCrLf & vbCrLf & Err.Description, _
            vbExclamation, "QuickPhrase"
     SaveToDisk = False
@@ -155,7 +214,8 @@ Public Function ImportFrom(ByVal path As String, ByVal replaceAll As Boolean, _
     On Error GoTo Fail
 
     Dim inLabels() As String, inTexts() As String, inCount As Long
-    If Not JsonLite.ParsePhrases(ReadUtf8(path), inLabels, inTexts, inCount, errMsg) Then
+    Dim inNewlines() As Boolean
+    If Not JsonLite.ParsePhrases(ReadUtf8(path), inLabels, inTexts, inNewlines, inCount, errMsg) Then
         ImportFrom = False
         Exit Function
     End If
@@ -165,7 +225,7 @@ Public Function ImportFrom(ByVal path As String, ByVal replaceAll As Boolean, _
 
     Dim i As Long
     For i = 0 To inCount - 1
-        AddPhrase inLabels(i), inTexts(i)
+        AddPhrase inLabels(i), inTexts(i), inNewlines(i)
     Next i
 
     ImportFrom = SaveToDisk()
@@ -180,7 +240,7 @@ Public Function ExportTo(ByVal path As String, ByRef errMsg As String) As Boolea
     On Error GoTo Fail
 
     EnsureLoaded
-    WriteUtf8 path, JsonLite.SerializePhrases(mLabels, mTexts, mCount)
+    WriteUtf8 path, JsonLite.SerializePhrases(mLabels, mTexts, mNewlines, mCount)
     ExportTo = True
     Exit Function
 
@@ -208,19 +268,18 @@ Private Sub Grow(ByVal needed As Long)
 
     ReDim Preserve mLabels(0 To capacity - 1)
     ReDim Preserve mTexts(0 To capacity - 1)
+    ReDim Preserve mNewlines(0 To capacity - 1)
 End Sub
 
 Private Sub SeedDefaults()
-    AddPhrase ChrW$(&H633) & ChrW$(&H644) & ChrW$(&H627) & ChrW$(&H645), _
-              ChrW$(&H633) & ChrW$(&H644) & ChrW$(&H627) & ChrW$(&H645)
-    AddPhrase ChrW$(&H6A9) & ChrW$(&H62C) & ChrW$(&H627) & ChrW$(&H6CC) & ChrW$(&H6CC) & "?", _
-              ChrW$(&H6A9) & ChrW$(&H62C) & ChrW$(&H627) & ChrW$(&H6CC) & ChrW$(&H6CC) & ChrW$(&H61F)
-    AddPhrase ChrW$(&H62E) & ChrW$(&H648) & ChrW$(&H628) & ChrW$(&H6CC) & "?", _
-              ChrW$(&H62E) & ChrW$(&H648) & ChrW$(&H628) & ChrW$(&H6CC) & ChrW$(&H61F)
-    AddPhrase ChrW$(&H62F) & ChrW$(&H648) & ChrW$(&H633) & ChrW$(&H62A) & ChrW$(&H62A) & " " & _
-              ChrW$(&H62F) & ChrW$(&H627) & ChrW$(&H631) & ChrW$(&H645), _
-              ChrW$(&H62F) & ChrW$(&H648) & ChrW$(&H633) & ChrW$(&H62A) & ChrW$(&H62A) & " " & _
-              ChrW$(&H62F) & ChrW$(&H627) & ChrW$(&H631) & ChrW$(&H645)
+    ' Two examples, one per script, so a new user can see immediately that both
+    ' Latin and Persian text work. Written with ChrW so the source file stays
+    ' pure ASCII and cannot be mangled by an editor saving in the wrong encoding.
+    AddPhrase "Hello", "Hello"
+
+    Dim salam As String
+    salam = ChrW$(&H633) & ChrW$(&H644) & ChrW$(&H627) & ChrW$(&H645)
+    AddPhrase salam, salam
 End Sub
 
 Private Sub EnsureFolder(ByVal folderPath As String)

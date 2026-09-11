@@ -14,23 +14,53 @@ Public Const QP_URL As String = "https://github.com/cenaav/QuickPhrase"
 '--- Insertion -----------------------------------------------------------------
 
 ' Inserts a phrase at the insertion point, replacing any current selection.
-' Stored text uses vbLf for line breaks; Word wants vbCr inside a range.
+'
+' Two conveniences are applied on the way in:
+'
+'   Spacing  - a space is added before (or after) the phrase, so clicking two
+'              buttons in a row does not run the words together. Controlled by
+'              SnippetStore.SpaceMode, and suppressed when there is already
+'              whitespace there, which prevents double spaces.
+'
+'   Newline  - phrases flagged with PhraseNewline end the paragraph after
+'              inserting, for sign-offs and list items.
 Public Sub InsertPhrase(ByVal index As Long)
     Dim text As String
+    Dim endParagraph As Boolean
 
     If index < 0 Or index >= SnippetStore.PhraseCount Then Exit Sub
+
     text = SnippetStore.PhraseText(index)
-    If Len(text) = 0 Then Exit Sub
+    endParagraph = SnippetStore.PhraseNewline(index)
+
+    ' A phrase with no text is still worth honouring if it ends the line.
+    If Len(text) = 0 And Not endParagraph Then Exit Sub
 
     If Application.Documents.count = 0 Then
-        MsgBox "Open a document first.", vbInformation, QP_NAME
+        UnicodeUI.MsgBoxW "Open a document first.", vbInformation, QP_NAME
         Exit Sub
     End If
 
-    Select Case Application.Selection.Type
-        Case wdNoSelection
-            MsgBox "Place the cursor where the text should go.", vbInformation, QP_NAME
-            Exit Sub
+    If Application.Selection.Type = wdNoSelection Then
+        UnicodeUI.MsgBoxW "Place the cursor where the text should go.", _
+                          vbInformation, QP_NAME
+        Exit Sub
+    End If
+
+    text = NormalizeLineBreaks(text)
+
+    Dim sel As Selection
+    Set sel = Application.Selection
+
+    Select Case SnippetStore.SpaceMode
+        Case qpSpaceBefore
+            If Not IsBlank(PrecedingChar(sel)) Then text = " " & text
+        Case qpSpaceAfter
+            ' A trailing space immediately before a paragraph break is just
+            ' invisible clutter, so it is skipped when the phrase ends the line.
+            If Not endParagraph Then
+                If Not IsBlank(FollowingChar(sel)) Then text = text & " "
+            End If
     End Select
 
     ' Group the insertion into a single undo step where Word supports it.
@@ -43,7 +73,8 @@ Public Sub InsertPhrase(ByVal index As Long)
     End If
 
     On Error GoTo Fail
-    Application.Selection.TypeText text:=NormalizeLineBreaks(text)
+    If Len(text) > 0 Then sel.TypeText text:=text
+    If endParagraph Then sel.TypeParagraph
 
 CleanUp:
     If Not rec Is Nothing Then
@@ -54,10 +85,10 @@ CleanUp:
     Exit Sub
 
 Fail:
-    MsgBox "QuickPhrase could not insert the text:" & vbCrLf & vbCrLf & _
-           Err.Description & vbCrLf & vbCrLf & _
-           "This usually means the document is protected or read-only.", _
-           vbExclamation, QP_NAME
+    UnicodeUI.MsgBoxW "QuickPhrase could not insert the text:" & vbCrLf & vbCrLf & _
+                      Err.Description & vbCrLf & vbCrLf & _
+                      "This usually means the document is protected or read-only.", _
+                      vbExclamation, QP_NAME
     Resume CleanUp
 End Sub
 
@@ -66,6 +97,48 @@ Private Function NormalizeLineBreaks(ByVal s As String) As String
     s = Replace(s, vbCrLf, vbCr)
     s = Replace(s, vbLf, vbCr)
     NormalizeLineBreaks = s
+End Function
+
+' The character immediately before the insertion point, or "" at the start of
+' the story. Duplicating the range keeps this correct inside headers, footnotes
+' and text boxes, where the document's main story would give the wrong answer.
+Private Function PrecedingChar(ByVal sel As Selection) As String
+    Dim r As Range
+
+    On Error Resume Next
+    Set r = sel.Range.Duplicate
+    r.Collapse Direction:=wdCollapseStart
+    If r.MoveStart(Unit:=wdCharacter, count:=-1) = 0 Then Exit Function
+    PrecedingChar = r.text
+End Function
+
+Private Function FollowingChar(ByVal sel As Selection) As String
+    Dim r As Range
+
+    On Error Resume Next
+    Set r = sel.Range.Duplicate
+    r.Collapse Direction:=wdCollapseEnd
+    If r.MoveEnd(Unit:=wdCharacter, count:=1) = 0 Then Exit Function
+    FollowingChar = r.text
+End Function
+
+' True for anything that already separates words: whitespace, a paragraph or
+' cell marker, or nothing at all. Word uses Chr(7) for cell and row marks and
+' Chr(11)/Chr(12) for line and page breaks.
+Private Function IsBlank(ByVal ch As String) As Boolean
+    If Len(ch) = 0 Then
+        IsBlank = True
+        Exit Function
+    End If
+
+    Select Case ch
+        Case " ", vbCr, vbLf, vbTab, Chr$(7), Chr$(11), Chr$(12)
+            IsBlank = True
+        Case ChrW$(&HA0)      ' non-breaking space
+            IsBlank = True
+        Case Else
+            IsBlank = False
+    End Select
 End Function
 
 '--- Manager -------------------------------------------------------------------
@@ -85,7 +158,7 @@ Public Sub ImportPhrases()
     If Len(path) = 0 Then Exit Sub
 
     Dim answer As VbMsgBoxResult
-    answer = MsgBox("Replace your current phrases with the ones in this file?" & vbCrLf & vbCrLf & _
+    answer = UnicodeUI.MsgBoxW("Replace your current phrases with the ones in this file?" & vbCrLf & vbCrLf & _
                     "Yes" & vbTab & "- replace everything" & vbCrLf & _
                     "No" & vbTab & "- add them to the end of the current list" & vbCrLf & _
                     "Cancel" & vbTab & "- do nothing", _
@@ -95,10 +168,10 @@ Public Sub ImportPhrases()
     Dim errMsg As String
     If SnippetStore.ImportFrom(path, (answer = vbYes), errMsg) Then
         QuickPhraseRibbon.RefreshRibbon
-        MsgBox "Imported " & SnippetStore.PhraseCount & " phrase(s).", _
+        UnicodeUI.MsgBoxW "Imported " & SnippetStore.PhraseCount & " phrase(s).", _
                vbInformation, QP_NAME
     Else
-        MsgBox "Import failed:" & vbCrLf & vbCrLf & errMsg, vbExclamation, QP_NAME
+        UnicodeUI.MsgBoxW "Import failed:" & vbCrLf & vbCrLf & errMsg, vbExclamation, QP_NAME
     End If
 End Sub
 
@@ -111,10 +184,10 @@ Public Sub ExportPhrases()
 
     Dim errMsg As String
     If SnippetStore.ExportTo(path, errMsg) Then
-        MsgBox "Exported " & SnippetStore.PhraseCount & " phrase(s) to:" & vbCrLf & _
+        UnicodeUI.MsgBoxW "Exported " & SnippetStore.PhraseCount & " phrase(s) to:" & vbCrLf & _
                path, vbInformation, QP_NAME
     Else
-        MsgBox "Export failed:" & vbCrLf & vbCrLf & errMsg, vbExclamation, QP_NAME
+        UnicodeUI.MsgBoxW "Export failed:" & vbCrLf & vbCrLf & errMsg, vbExclamation, QP_NAME
     End If
 End Sub
 
@@ -149,7 +222,7 @@ End Function
 '--- About ---------------------------------------------------------------------
 
 Public Sub ShowAbout()
-    MsgBox QP_NAME & " " & QP_VERSION & vbCrLf & vbCrLf & _
+    UnicodeUI.MsgBoxW QP_NAME & " " & QP_VERSION & vbCrLf & vbCrLf & _
            "Insert your frequently used phrases into Word with one click." & vbCrLf & vbCrLf & _
            "Phrase file:" & vbCrLf & SnippetStore.StorePath() & vbCrLf & vbCrLf & _
            "Phrases loaded: " & SnippetStore.PhraseCount & vbCrLf & _

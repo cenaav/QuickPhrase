@@ -66,6 +66,8 @@ Type in your document. Click a button. The text lands exactly where the cursor i
 | 🏷️ | **Short label, long text** | A button reading `Signature` can insert five lines of contact details. |
 | 🌍 | **Persian, Arabic, Hebrew, emoji** | UTF-8 throughout, and insertion via Word's own typing engine, so RTL text keeps its direction. |
 | ↕️ | **Reorderable** | Up/Down decides which phrases earn a ribbon button. |
+| ␣ | **Automatic spacing** | A space is added so clicked phrases never run into the previous word — and skipped when there is already one. |
+| ↵ | **Optional line break** | Flag a phrase to end the paragraph after inserting, for sign-offs and list items. |
 | 💾 | **One plain JSON file** | Human-readable, hand-editable, easy to back up or put in a synced folder. |
 | 📤 | **Import / export** | Share a phrase set with colleagues. Import replaces or appends, your choice. |
 | 🚫 | **No background process** | It is a Word template. Nothing runs when Word is closed. |
@@ -145,6 +147,25 @@ Two ready-made sets ship in [`examples/`](examples/):
 - [`persian-starter.json`](examples/persian-starter.json) — Persian greetings and sign-offs
 - [`english-business.json`](examples/english-business.json) — English business correspondence
 
+### Spacing and line breaks
+
+Two settings stop clicked phrases from colliding with the text around them.
+
+**Add a space** (in *Manage Phrases*, applies to every phrase):
+
+| Choice | Result |
+|---|---|
+| **Before the phrase** *(default)* | `Hello` typed after `Say` gives `Say Hello` |
+| **After the phrase** | the space goes on the other side, for building a sentence forwards |
+| **No space** | inserted exactly as stored |
+
+The space is skipped when there is already whitespace, a paragraph mark or a
+table cell boundary next to the cursor, so you never get a double space.
+
+**Start a new line after inserting this phrase** is a per-phrase tick box. Use it
+for sign-offs and list items, where the next thing you type should begin on a
+fresh line.
+
 ## Where your phrases are stored
 
 ```
@@ -157,17 +178,20 @@ UTF-8 JSON, no BOM, safe to edit in any text editor:
 [
   {
     "label": "Best regards",
-    "text": "Best regards,\nJane Doe\nSenior Editor"
+    "text": "Best regards,\nJane Doe\nSenior Editor",
+    "newline": true
   },
   {
     "label": "سلام",
-    "text": "سلام"
+    "text": "سلام",
+    "newline": false
   }
 ]
 ```
 
-Use `\n` for line breaks. After editing the file outside Word, click **Reload**
-on the ribbon to pick up the changes.
+Use `\n` for line breaks. `newline` is optional and defaults to `false`; set it
+to `true` to end the paragraph after inserting. After editing the file outside
+Word, click **Reload** on the ribbon to pick up the changes.
 
 Want the same phrases on several machines? Put this file in a cloud-synced
 folder and symlink it.

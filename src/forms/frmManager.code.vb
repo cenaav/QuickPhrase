@@ -25,6 +25,19 @@ Private Sub UserForm_Initialize()
     Me.Caption = "QuickPhrase - Manage Phrases"
     mCurrentIndex = -1
 
+    mSuspendEvents = True
+    cboSpacing.Clear
+    cboSpacing.AddItem "Before the phrase"
+    cboSpacing.AddItem "After the phrase"
+    cboSpacing.AddItem "No space"
+
+    Select Case SnippetStore.SpaceMode
+        Case qpSpaceAfter: cboSpacing.ListIndex = 1
+        Case qpSpaceNone:  cboSpacing.ListIndex = 2
+        Case Else:         cboSpacing.ListIndex = 0
+    End Select
+    mSuspendEvents = False
+
     SnippetStore.EnsureLoaded
     RefreshList 0
 End Sub
@@ -87,11 +100,13 @@ Private Sub LoadEditors(ByVal index As Long)
     If index < 0 Or index >= SnippetStore.PhraseCount Then
         txtLabel.text = ""
         txtText.text = ""
+        chkNewline.value = False
         mCurrentIndex = -1
     Else
         txtLabel.text = SnippetStore.PhraseLabel(index)
         ' MSForms text boxes want vbCrLf for line breaks; the store uses vbLf.
         txtText.text = Replace(SnippetStore.PhraseText(index), vbLf, vbCrLf)
+        chkNewline.value = SnippetStore.PhraseNewline(index)
         mCurrentIndex = index
     End If
 
@@ -111,7 +126,7 @@ Private Sub CommitEditors()
     If Len(label) = 0 Then label = Left$(Replace(text, vbLf, " "), 24)
     If Len(label) = 0 Then label = "(untitled)"
 
-    SnippetStore.UpdatePhrase mCurrentIndex, label, text
+    SnippetStore.UpdatePhrase mCurrentIndex, label, text, CBool(chkNewline.value)
 End Sub
 
 '--- Buttons -------------------------------------------------------------------
@@ -132,8 +147,9 @@ Private Sub btnDelete_Click()
     index = lstPhrases.ListIndex
     If index < 0 Then Exit Sub
 
-    If MsgBox("Delete """ & SnippetStore.PhraseLabel(index) & """?", _
-              vbYesNo + vbQuestion, "QuickPhrase") <> vbYes Then Exit Sub
+    ' MsgBox would mangle a Persian or Arabic label into question marks.
+    If UnicodeUI.MsgBoxW("Delete """ & SnippetStore.PhraseLabel(index) & """?", _
+                         vbYesNo + vbQuestion, "QuickPhrase") <> vbYes Then Exit Sub
 
     ' Deliberately not committing first - the entry is about to disappear.
     mCurrentIndex = -1
@@ -166,6 +182,7 @@ End Sub
 
 Private Sub btnSave_Click()
     CommitEditors
+    SaveSpacingChoice
 
     If Not SnippetStore.SaveToDisk() Then Exit Sub
 
@@ -177,6 +194,18 @@ Private Sub btnCancel_Click()
     mSuspendEvents = True
     SnippetStore.LoadFromDisk
     Unload Me
+End Sub
+
+'--- Spacing preference --------------------------------------------------------
+
+' Applies to every phrase, so it is stored as a setting rather than with the
+' phrase list. Written only on Save, so Cancel discards it like everything else.
+Private Sub SaveSpacingChoice()
+    Select Case cboSpacing.ListIndex
+        Case 1: SnippetStore.SpaceMode = qpSpaceAfter
+        Case 2: SnippetStore.SpaceMode = qpSpaceNone
+        Case Else: SnippetStore.SpaceMode = qpSpaceBefore
+    End Select
 End Sub
 
 '--- State ---------------------------------------------------------------------
@@ -193,6 +222,7 @@ Private Sub UpdateEnabledState()
     btnDown.Enabled = (index >= 0 And index < count - 1)
     txtLabel.Enabled = (index >= 0)
     txtText.Enabled = (index >= 0)
+    chkNewline.Enabled = (index >= 0)
 
     If count > QuickPhraseRibbon.FAV_COUNT Then
         lblHint.Caption = "The first " & QuickPhraseRibbon.FAV_COUNT & _

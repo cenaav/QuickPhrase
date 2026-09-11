@@ -24,6 +24,7 @@ Private mLen As Long
 Public Function ParsePhrases(ByVal json As String, _
                              ByRef labels() As String, _
                              ByRef texts() As String, _
+                             ByRef newlines() As Boolean, _
                              ByRef count As Long, _
                              ByRef errMsg As String) As Boolean
     On Error GoTo Fail
@@ -34,6 +35,7 @@ Public Function ParsePhrases(ByVal json As String, _
     count = 0
     ReDim labels(0 To 0)
     ReDim texts(0 To 0)
+    ReDim newlines(0 To 0)
 
     SkipWhitespace
     If Peek() <> "[" Then
@@ -54,6 +56,7 @@ Public Function ParsePhrases(ByVal json As String, _
     capacity = 16
     ReDim labels(0 To capacity - 1)
     ReDim texts(0 To capacity - 1)
+    ReDim newlines(0 To capacity - 1)
 
     Do
         SkipWhitespace
@@ -64,9 +67,10 @@ Public Function ParsePhrases(ByVal json As String, _
         End If
         mPos = mPos + 1
 
-        Dim lbl As String, txt As String
+        Dim lbl As String, txt As String, nl As Boolean
         lbl = ""
         txt = ""
+        nl = False
 
         SkipWhitespace
         If Peek() <> "}" Then
@@ -91,9 +95,10 @@ Public Function ParsePhrases(ByVal json As String, _
 
                 SkipWhitespace
                 Select Case LCase$(key)
-                    Case "label": lbl = ReadString()
-                    Case "text":  txt = ReadString()
-                    Case Else:    SkipValue
+                    Case "label":   lbl = ReadString()
+                    Case "text":    txt = ReadString()
+                    Case "newline": nl = ReadBool()
+                    Case Else:      SkipValue
                 End Select
 
                 SkipWhitespace
@@ -117,9 +122,11 @@ Public Function ParsePhrases(ByVal json As String, _
             capacity = capacity * 2
             ReDim Preserve labels(0 To capacity - 1)
             ReDim Preserve texts(0 To capacity - 1)
+            ReDim Preserve newlines(0 To capacity - 1)
         End If
         labels(count) = lbl
         texts(count) = txt
+        newlines(count) = nl
         count = count + 1
 
         SkipWhitespace
@@ -145,6 +152,7 @@ End Function
 ' Serialises parallel label/text arrays into pretty-printed JSON.
 Public Function SerializePhrases(ByRef labels() As String, _
                                  ByRef texts() As String, _
+                                 ByRef newlines() As Boolean, _
                                  ByVal count As Long) As String
     Dim sb As String
     Dim i As Long
@@ -158,7 +166,8 @@ Public Function SerializePhrases(ByRef labels() As String, _
     For i = 0 To count - 1
         sb = sb & "  {" & vbCrLf
         sb = sb & "    ""label"": " & QuoteString(labels(i)) & "," & vbCrLf
-        sb = sb & "    ""text"": " & QuoteString(texts(i)) & vbCrLf
+        sb = sb & "    ""text"": " & QuoteString(texts(i)) & "," & vbCrLf
+        sb = sb & "    ""newline"": " & LCase$(CStr(newlines(i))) & vbCrLf
         sb = sb & "  }"
         If i < count - 1 Then sb = sb & ","
         sb = sb & vbCrLf
@@ -266,6 +275,23 @@ Private Function ReadString() As String
     Loop
 
     Err.Raise vbObjectError + 2, "JsonLite", "Unterminated string literal."
+End Function
+
+' Reads a JSON boolean. Anything else is skipped and reported as False, so a
+' hand-edited file with "newline": 1 degrades rather than failing to load.
+Private Function ReadBool() As Boolean
+    SkipWhitespace
+
+    If LCase$(Mid$(mJson, mPos, 4)) = "true" Then
+        mPos = mPos + 4
+        ReadBool = True
+    ElseIf LCase$(Mid$(mJson, mPos, 5)) = "false" Then
+        mPos = mPos + 5
+        ReadBool = False
+    Else
+        SkipValue
+        ReadBool = False
+    End If
 End Function
 
 ' Consumes and discards any value, so unknown keys never break parsing.
