@@ -16,9 +16,18 @@ Click a button, the text appears at your cursor. No clipboard, no retyping, no d
 
 **English** · [فارسی](#فارسی)
 
-[**Download**](https://github.com/cenaav/QuickPhrase/releases/latest) ·
-[Install](#install) ·
+<br>
+
+### [⬇ Download for Windows](https://github.com/cenaav/QuickPhrase/releases/latest)
+
+**Unzip → close Word → double-click `Install.bat` → done.**
+No admin rights. No installer. No account.
+
+<br>
+
+[Install guide](#install) ·
 [How to use](#how-to-use-it) ·
+[Screenshots](#screenshots) ·
 [FAQ](#faq) ·
 [Build from source](#building-from-source)
 
@@ -465,6 +474,13 @@ crediting where it came from.
 روی دکمه کلیک می‌کنید، متن دقیقاً همان‌جا که نشانگر است درج می‌شود. بدون کلیپ‌بورد، بدون تایپ دوباره.
 
 [English](#quickphrase) · **فارسی**
+
+<br>
+
+### [⬇ دانلود برای ویندوز](https://github.com/cenaav/QuickPhrase/releases/latest)
+
+**فایل را باز کنید ← Word را ببندید ← روی `Install.bat` دوبار کلیک کنید ← تمام.**
+بدون نیاز به دسترسی ادمین، بدون نصب‌کننده، بدون حساب کاربری.
 
 </div>
 

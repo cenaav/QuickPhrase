@@ -4,7 +4,7 @@ All notable changes to QuickPhrase are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-09-12
 
 ### Fixed
 - Persian, Arabic and other non-Latin text in message boxes showed as question
@@ -56,4 +56,4 @@ All notable changes to QuickPhrase are recorded here. Format follows
 - Manager dialog is shorter, and the inserted-text box is sized for the sentence
   or sign-off a phrase usually is rather than a full page.
 
-[Unreleased]: https://github.com/cenaav/QuickPhrase/commits/dev
+[1.0.0]: https://github.com/cenaav/QuickPhrase/releases/tag/v1.0.0
