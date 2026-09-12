@@ -403,14 +403,20 @@ That single blob is the only thing Word itself must produce. **If you changed
 anything under `src/`, it has to be regenerated** on Windows with Word:
 
 ```
-build-and-push.cmd
+build.cmd
 ```
 
-Double-click it. It pulls, rebuilds with Word, restores the Trust Center
-setting, then commits and pushes just the blob — any other files you changed
-are listed and left alone.
+Double-click it. It rebuilds with Word and restores the Trust Center setting
+afterwards, including when the build fails. It touches nothing in git, so
+review the result and commit when you are ready:
 
-Prefer to do it step by step:
+```bash
+git add package/word/vbaProject.bin
+git commit -m "build: rebuild compiled VBA project"
+git push
+```
+
+Prefer to run the steps by hand:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\build.ps1 -ExportVba -EnableVbomTrust
@@ -696,10 +702,16 @@ python3 build/pack.py verify
 آن یک فایل، تنها چیزی است که فقط خودِ Word می‌تواند بسازد. **اگر چیزی زیر پوشهٔ `src/` را تغییر دادید، باید دوباره ساخته شود** — روی ویندوز و با Word نصب‌شده:
 
 ```
-build-and-push.cmd
+build.cmd
 ```
 
-روی آن دوبار کلیک کنید. این اسکریپت آخرین تغییرات را می‌گیرد، با Word دوباره می‌سازد، تنظیم Trust Center را به حالت اول برمی‌گرداند، و فقط همان فایل باینری را commit و push می‌کند. سایر فایل‌هایی که تغییر داده‌اید فقط فهرست می‌شوند و دست‌نخورده می‌مانند.
+روی آن دوبار کلیک کنید. این اسکریپت با Word دوباره می‌سازد و بعد تنظیم Trust Center را به حالت اول برمی‌گرداند — حتی اگر ساخت با خطا مواجه شود. این اسکریپت به git دست نمی‌زند؛ نتیجه را بررسی کنید و هر وقت آماده بودید خودتان commit کنید:
+
+```bash
+git add package/word/vbaProject.bin
+git commit -m "build: rebuild compiled VBA project"
+git push
+```
 
 پیش از اولین ساخت، Word باید اجازهٔ دسترسی به پروژهٔ VBA را بدهد. اسکریپت این کار را خودش انجام می‌دهد و بعد هم برمی‌گرداند؛ اگر خواستید دستی انجام دهید:
 `Word ← File ← Options ← Trust Center ← Trust Center Settings ← Macro Settings ← Trust access to the VBA project object model`

@@ -56,7 +56,7 @@ package/                   The .dotm, exploded
     vbaProject.bin         Compiled VBA (binary, committed)
   docProps/
 
-build-and-push.cmd         Rebuild the VBA project and push it (Windows)
+build.cmd                  Rebuild the VBA project (Windows, needs Word)
 
 build/
   pack.py                  package/ + src/customUI -> .dotm  (any OS)
@@ -86,13 +86,13 @@ Changing VBA under `src/` — needs Windows and Word once. Easiest route is to
 double-click:
 
 ```
-build-and-push.cmd
+build.cmd
 ```
 
-It refuses to run while Word is open, pulls, rebuilds, restores the Trust
-Center setting even if the build fails, then commits and pushes **only**
-`package/word/vbaProject.bin`. Other modified files are listed and left
-uncommitted, so it cannot push work that was not ready.
+It refuses to run while Word is open, rebuilds, and restores the Trust Center
+setting even if the build fails. It makes no git changes at all: publishing the
+new blob is a separate, deliberate step, so a build can be inspected or thrown
+away without anything leaving the machine.
 
 By hand:
 

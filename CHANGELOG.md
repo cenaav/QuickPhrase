@@ -4,6 +4,13 @@ All notable changes to QuickPhrase are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- `build-and-push.cmd` is now `build.cmd`, and no longer touches git. It builds
+  and restores the Trust Center setting; committing and pushing the rebuilt VBA
+  project is a separate, deliberate step.
+
 ## [1.0.0] - 2026-09-12
 
 ### Fixed
@@ -56,4 +63,5 @@ All notable changes to QuickPhrase are recorded here. Format follows
 - Manager dialog is shorter, and the inserted-text box is sized for the sentence
   or sign-off a phrase usually is rather than a full page.
 
+[Unreleased]: https://github.com/cenaav/QuickPhrase/compare/v1.0.0...main
 [1.0.0]: https://github.com/cenaav/QuickPhrase/releases/tag/v1.0.0
